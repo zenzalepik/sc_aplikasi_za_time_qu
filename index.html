@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Jam Digital — HTML</title>
+    <style>
+        :root {
+            --bg: #000;
+            --green: #39ff14;
+            /* neon green */
+            --green-dim: rgba(57, 255, 20, 0.45);
+            --panel-border: rgba(57, 255, 20, 0.25);
+            --mono: "Roboto Mono", "Courier New", monospace;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: var(--bg);
+            color: var(--green);
+            font-family: Inter, system-ui, -apple-system, sans-serif
+        }
+
+        .app {
+            max-width: 900px;
+            margin: 18px auto;
+            padding: 16px;
+            box-sizing: border-box
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--green)
+        }
+
+        .day-label {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--green-dim);
+            cursor: pointer;
+            user-select: none;
+            font-size: 20px;
+        }
+
+        .day-label.highlight {
+            border-color: var(--green);
+            background: rgba(57, 255, 20, 0.08);
+            color: var(--green);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+        }
+
+        .clock {
+            text-align: center;
+            margin: 18px 0;
+        }
+
+        .time {
+            font-family: var(--mono);
+            font-size: 56px;
+            margin: 0
+        }
+
+        .date {
+            color: var(--green);
+            opacity: 0.9
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px
+        }
+
+        .panel {
+            border: 1px solid var(--panel-border);
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: none;
+            background: transparent;
+        }
+
+        .panel h3 {
+            margin: 0 0 8px 0;
+            color: var(--green)
+        }
+
+        .display-mono {
+            font-family: var(--mono);
+            font-size: 28px
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--green-dim);
+            color: var(--green);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        button.primary {
+            border-color: var(--green)
+        }
+
+        small {
+            color: var(--green);
+            opacity: 0.8
+        }
+
+        /* Alarm list */
+        .alarm-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--panel-border)
+        }
+
+        .alarm-row:last-child {
+            border-bottom: 0
+        }
+
+        .switch {
+            appearance: none;
+            width: 46px;
+            height: 26px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            border: 1px solid var(--panel-border);
+            cursor: pointer
+        }
+
+        .switch:after {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--green);
+            transition: all .18s
+        }
+
+        .switch.on {
+            background: linear-gradient(90deg, rgba(57, 255, 20, 0.12), rgba(57, 255, 20, 0.04))
+        }
+
+        .switch.on:after {
+            transform: translateX(20px)
+        }
+
+        /* modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999
+        }
+
+        .modal {
+            background: #000;
+            border: 1px solid var(--panel-border);
+            padding: 18px;
+            border-radius: 8px;
+            min-width: 300px;
+            color: var(--green)
+        }
+
+        .modal h4 {
+            margin-top: 0
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            background: transparent;
+            border: 1px solid var(--panel-border);
+            color: var(--green);
+            padding: 8px;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px
+        }
+
+        .center {
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        @media(max-width:720px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .time {
+                font-size: 40px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" id="app">
+        <header>
+            <h1>Jam Digital</h1>
+            <div>
+                <span id="dayLabel" class="day-label" title="Klik untuk pilih hari">—</span>
+            </div>
+        </header>
+
+        <section class="clock">
+            <div id="time" class="time">00:00:00</div>
+            <div id="date" class="date">0000-00-00</div>
+        </section>
+
+        <div class="grid">
+            <!-- Stopwatch -->
+            <section class="panel">
+                <h3>Stopwatch</h3>
+                <div id="swDisplay" class="display-mono">00:00:00.000</div>
+                <div style="margin-top:10px">
+                    <button id="swStart" class="primary">Start</button>
+                    <button id="swReset">Reset</button>
+                </div>
+            </section>
+
+            <!-- Timer -->
+            <section class="panel">
+                <h3>Timer (Countdown)</h3>
+                <div id="timerDisplay" class="display-mono">00:00:00</div>
+                <div style="margin-top:10px">
+                    <button id="timerSet" class="">Set / Start</button>
+                    <button id="timerStop">Stop</button>
+                    <button id="timerReset">Reset</button>
+                </div>
+            </section>
+
+            <!-- Alarm -->
+            <section class="panel">
+                <h3>Alarm</h3>
+                <div style="margin-bottom:10px">
+                    <button id="addAlarmBtn" class="primary">Tambah Alarm</button>
+                </div>
+                <div id="alarmList" aria-live="polite">
+                    <!-- alarms injected here -->
+                </div>
+                <small>Catatan: alarm akan dicek setiap detik selama tab terbuka.</small>
+            </section>
+
+            <!-- Spare panel for notes or future -->
+            <section class="panel">
+                <h3>Info</h3>
+                <p><small>Warna latar: hitam. Teks hijau. Alarm disimpan di penyimpanan lokal (localStorage).</small>
+                </p>
+                <p><small>Untuk membuat alarm berbunyi saat tab ditutup, diperlukan Service Worker / Notification API &
+                        permission (tidak termasuk di demo ini).</small></p>
+            </section>
+        </div>
+    </div>
+
+    <!-- Modals container -->
+    <div id="modalRoot"></div>
+
+    <script>
+        (function () {
+            // Utilities
+            const Dnames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+            function two(n) { return String(n).padStart(2, '0'); }
+            function msToHMSms(ms) {
+                const hours = Math.floor(ms / 3600000);
+                const mins = Math.floor(ms % 3600000 / 60000);
+                const secs = Math.floor(ms % 60000 / 1000);
+                const msecs = Math.floor(ms % 1000);
+                return `${two(hours)}:${two(mins)}:${two(secs)}.${String(msecs).padStart(3, '0')}`;
+            }
+            function durToHMS(d) {
+                const s = Math.max(0, Math.floor(d / 1000));
+                const h = Math.floor(s / 3600);
+                const m = Math.floor((s % 3600) / 60);
+                const sec = s % 60;
+                return `${two(h)}:${two(m)}:${two(sec)}`;
+            }
+
+            // DOM refs
+            const timeEl = document.getElementById('time');
+            const dateEl = document.getElementById('date');
+            const dayLabel = document.getElementById('dayLabel');
+            const modalRoot = document.getElementById('modalRoot');
+
+            // Day selection / highlight
+            let highlightedDay = localStorage.getItem('highlightedDay') || null;
+
+            function updateDayLabel(now) {
+                // JS: getDay() -> 0 Sun .. 6 Sat. Our mapping: Monday..Sunday
+                // Convert to Monday-based index:
+                const jsDay = now.getDay(); // 0 (Sun) .. 6 (Sat)
+                // Map to Monday index: Monday=0
+                const mondayIndex = (jsDay + 6) % 7;
+                const todayName = Dnames[mondayIndex];
+                dayLabel.textContent = todayName;
+                // highlight if selected day equals today's name
+                if (highlightedDay === todayName) {
+                    dayLabel.classList.add('highlight');
+                } else {
+                    dayLabel.classList.remove('highlight');
+                }
+                dayLabel.title = 'Klik untuk pilih hari (tersimpan)';
+            }
+
+            dayLabel.addEventListener('click', showDayPicker);
+
+            function showDayPicker() {
+                showModal(createDayPicker());
+            }
+
+            function createDayPicker() {
+                const box = document.createElement('div');
+                box.className = 'modal';
+                box.innerHTML = `<h4>Pilih Hari</h4>`;
+                Dnames.forEach(name => {
+                    const btn = document.createElement('div');
+                    btn.style.padding = '8px';
+                    btn.style.cursor = 'pointer';
+                    btn.textContent = name;
+                    btn.onclick = () => {
+                        highlightedDay = name;
+                        localStorage.setItem('highlightedDay', name);
+                        closeModal();
+                        // update UI immediately
+                        updateDayLabel(new Date());
+                    };
+                    box.appendChild(btn);
+                });
+                const clr = document.createElement('div');
+                clr.style.marginTop = '8px';
+                const clearBtn = document.createElement('button');
+                clearBtn.textContent = 'Hapus Penandaan';
+                clearBtn.onclick = () => {
+                    highlightedDay = null;
+                    localStorage.removeItem('highlightedDay');
+                    closeModal();
+                    updateDayLabel(new Date());
+                };
+                clr.appendChild(clearBtn);
+                box.appendChild(clr);
+                return box;
+            }
+
+            // ------------ Clock (real-time) ------------
+            function tick() {
+                const now = new Date();
+                const hh = two(now.getHours()), mm = two(now.getMinutes()), ss = two(now.getSeconds());
+                timeEl.textContent = `${hh}:${mm}:${ss}`;
+                const y = now.getFullYear(), mo = two(now.getMonth() + 1), d = two(now.getDate());
+                dateEl.textContent = `${y}-${mo}-${d}`;
+                updateDayLabel(now);
+            }
+            tick();
+            setInterval(tick, 1000);
+
+            // ------------ Stopwatch ------------
+            let swStart = null;
+            let swElapsed = 0;
+            let swRunning = false;
+            let swTimerId = null;
+            const swDisplay = document.getElementById('swDisplay');
+            const swStartBtn = document.getElementById('swStart');
+            const swResetBtn = document.getElementById('swReset');
+
+            function swTick() {
+                const now = Date.now();
+                const total = swElapsed + (swRunning ? (now - swStart) : 0);
+                swDisplay.textContent = msToHMSms(total);
+            }
+
+            swStartBtn.addEventListener('click', () => {
+                if (!swRunning) {
+                    swStart = Date.now();
+                    swRunning = true;
+                    swStartBtn.textContent = 'Stop';
+                    swTimerId = setInterval(swTick, 50);
+                } else {
+                    // stop
+                    swElapsed += Date.now() - swStart;
+                    swRunning = false;
+                    swStartBtn.textContent = 'Start';
+                    if (swTimerId) clearInterval(swTimerId);
+                    swTick();
+                }
+            });
+
+            swResetBtn.addEventListener('click', () => {
+                swRunning = false; swStart = null; swElapsed = 0;
+                swStartBtn.textContent = 'Start';
+                if (swTimerId) clearInterval(swTimerId);
+                swTick();
+            });
+
+            swTick(); // initial
+
+            // ------------ Timer (countdown) ------------
+            let timerRemainingMs = 0;
+            let timerRunning = false;
+            let timerInterval = null;
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerSetBtn = document.getElementById('timerSet');
+            const timerStopBtn = document.getElementById('timerStop');
+            const timerResetBtn = document.getElementById('timerReset');
+
+            timerSetBtn.addEventListener('click', () => {
+                showModal(createTimerSetter());
+            });
+
+            timerStopBtn.addEventListener('click', () => {
+                stopTimer();
+            });
+
+            timerResetBtn.addEventListener('click', () => {
+                resetTimer();
+            });
+
+            function createTimerSetter() {
+                const m = document.createElement('div');
+                m.className = 'modal';
+                m.innerHTML = `<h4>Set Timer (hh:mm:ss)</h4>`;
+                const row = document.createElement('div');
+                row.className = 'row';
+                const ih = document.createElement('input'); ih.type = 'number'; ih.placeholder = 'Jam'; ih.value = '0';
+                const im = document.createElement('input'); im.type = 'number'; im.placeholder = 'Menit'; im.value = '0';
+                const is = document.createElement('input'); is.type = 'number'; is.placeholder = 'Detik'; is.value = '0';
+                row.appendChild(ih); row.appendChild(im); row.appendChild(is);
+                m.appendChild(row);
+                const ok = document.createElement('div'); ok.style.marginTop = '10px';
+                const btnOk = document.createElement('button'); btnOk.className = 'primary'; btnOk.textContent = 'Mulai';
+                btnOk.onclick = () => {
+                    const h = parseInt(ih.value || 0), mm = parseInt(im.value || 0), ss = parseInt(is.value || 0);
+                    const total = ((h * 3600) + (mm * 60) + ss) * 1000;
+                    if (total > 0) {
+                        startTimer(total);
+                        closeModal();
+                    }
+                };
+                const btnCancel = document.createElement('button'); btnCancel.textContent = 'Batal'; btnCancel.onclick = () => closeModal();
+                ok.appendChild(btnOk); ok.appendChild(btnCancel);
+                m.appendChild(ok);
+                return m;
+            }
+
+            function startTimer(ms) {
+                if (timerRunning) return;
+                timerRemainingMs = ms;
+                timerRunning = true;
+                timerInterval = setInterval(() => {
+                    timerRemainingMs -= 1000;
+                    if (timerRemainingMs <= 0) {
+                        resetTimer();
+                        onTimerFinish();
+                    }
+                    updateTimerDisplay();
+                }, 1000);
+                updateTimerDisplay();
+            }
+            function stopTimer() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerRunning = false;
+            }
+            function resetTimer() {
+                stopTimer();
+                timerRemainingMs = 0;
+                updateTimerDisplay();
+            }
+            function updateTimerDisplay() { timerDisplay.textContent = durToHMS(timerRemainingMs); }
+            function onTimerFinish() {
+                playBeep();
+                showModal(createSimpleModal('Timer Selesai', 'Waktu habis!'));
+            }
+            updateTimerDisplay();
+
+            // ------------ Alarms (localStorage) ------------
+            const alarmKey = 'alarms_v1';
+            let alarms = JSON.parse(localStorage.getItem(alarmKey) || '[]');
+            const alarmListEl = document.getElementById('alarmList');
+
+            function saveAlarms() { localStorage.setItem(alarmKey, JSON.stringify(alarms)); renderAlarms(); }
+
+            function renderAlarms() {
+                alarmListEl.innerHTML = '';
+                if (alarms.length === 0) {
+                    const p = document.createElement('div'); p.textContent = 'Belum ada alarm'; p.style.opacity = '0.9'; alarmListEl.appendChild(p); return;
+                }
+                alarms.forEach((a, idx) => {
+                    const row = document.createElement('div'); row.className = 'alarm-row';
+                    const left = document.createElement('div'); left.innerHTML = `<div style="font-family:var(--mono);font-size:18px">${two(a.hour)}:${two(a.minute)}</div><small>${a.label || ''}</small>`;
+                    const right = document.createElement('div'); right.style.display = 'flex'; right.style.alignItems = 'center'; right.style.gap = '8px';
+
+                    // switch
+                    const sw = document.createElement('div'); sw.className = 'switch' + (a.enabled ? ' on' : '');
+                    sw.onclick = () => {
+                        a.enabled = !a.enabled;
+                        saveAlarms();
+                    };
+
+                    const del = document.createElement('button'); del.textContent = 'Hapus';
+                    del.onclick = () => {
+                        if (confirm('Hapus alarm ' + two(a.hour) + ':' + two(a.minute) + ' ?')) {
+                            alarms.splice(idx, 1); saveAlarms();
+                        }
+                    };
+                    right.appendChild(sw);
+                    right.appendChild(del);
+                    row.appendChild(left); row.appendChild(right);
+                    alarmListEl.appendChild(row);
+                });
+            }
+
+            document.getElementById('addAlarmBtn').addEventListener('click', () => {
+                showModal(createAddAlarmModal());
+            });
+
+            function createAddAlarmModal() {
+                const m = document.createElement('div'); m.className = 'modal';
+                m.innerHTML = `<h4>Tambah Alarm</h4>`;
+                const row = document.createElement('div'); row.className = 'row';
+                const ih = document.createElement('input'); ih.type = 'number'; ih.placeholder = 'Jam'; ih.value = new Date().getHours();
+                const im = document.createElement('input'); im.type = 'number'; im.placeholder = 'Menit'; im.value = new Date().getMinutes();
+                row.appendChild(ih); row.appendChild(im);
+                m.appendChild(row);
+                const labelInput = document.createElement('input'); labelInput.type = 'text'; labelInput.placeholder = 'Label (opsional)'; labelInput.style.marginTop = '8px';
+                m.appendChild(labelInput);
+                const ok = document.createElement('div'); ok.style.marginTop = '10px';
+                const btnOk = document.createElement('button'); btnOk.textContent = 'Simpan'; btnOk.className = 'primary';
+                btnOk.onclick = () => {
+                    let h = parseInt(ih.value || 0), mm = parseInt(im.value || 0);
+                    if (Number.isNaN(h) || h < 0 || h > 23) h = 0;
+                    if (Number.isNaN(mm) || mm < 0 || mm > 59) mm = 0;
+                    alarms.push({ id: Date.now(), hour: h, minute: mm, enabled: true, label: labelInput.value || '' });
+                    alarms.sort((a, b) => a.hour !== b.hour ? a.hour - b.hour : a.minute - b.minute);
+                    saveAlarms(); closeModal();
+                };
+                const btnCancel = document.createElement('button'); btnCancel.textContent = 'Batal'; btnCancel.onclick = () => closeModal();
+                ok.appendChild(btnOk); ok.appendChild(btnCancel); m.appendChild(ok);
+                return m;
+            }
+
+            // Alarm checker (every second)
+            setInterval(() => {
+                const now = new Date();
+                const hh = now.getHours(), mm = now.getMinutes(), ss = now.getSeconds();
+                // trigger only when second == 0 (to reduce duplicates) — mimic Flutter behavior
+                if (ss !== 0) return;
+                alarms.forEach(a => {
+                    if (a.enabled && a.hour === hh && a.minute === mm) {
+                        // show alarm and sound
+                        playBeep();
+                        showModal(createSimpleModal('Alarm', `Alarm ${two(a.hour)}:${two(a.minute)}${a.label ? (' — ' + a.label) : ''}`));
+                    }
+                });
+            }, 1000);
+
+            renderAlarms();
+
+            // ------------ Modal helpers ------------
+            function showModal(node) {
+                modalRoot.innerHTML = ''; // single modal at time
+                const backdrop = document.createElement('div'); backdrop.className = 'modal-backdrop';
+                backdrop.onclick = (e) => { if (e.target === backdrop) closeModal(); };
+                backdrop.appendChild(node);
+                modalRoot.appendChild(backdrop);
+            }
+            function closeModal() { modalRoot.innerHTML = ''; }
+
+            function createSimpleModal(title, text) {
+                const m = document.createElement('div'); m.className = 'modal';
+                const h = document.createElement('h4'); h.textContent = title;
+                const p = document.createElement('div'); p.style.margin = '8px 0'; p.textContent = text;
+                const btn = document.createElement('button'); btn.textContent = 'OK'; btn.onclick = () => closeModal();
+                m.appendChild(h); m.appendChild(p); m.appendChild(btn);
+                return m;
+            }
+
+            // ------------ Sound (beep) ------------
+            let audioCtx = null;
+            function ensureAudio() {
+                if (audioCtx) return audioCtx;
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                return audioCtx;
+            }
+            function playBeep(duration = 1200, freq = 880) {
+                try {
+                    const ctx = ensureAudio();
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'sine'; o.frequency.value = freq;
+                    g.gain.value = 0.0001;
+                    o.connect(g); g.connect(ctx.destination);
+                    o.start();
+                    // ramp up
+                    g.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+                    // ramp down
+                    g.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + (duration / 1000));
+                    setTimeout(() => { try { o.stop(); o.disconnect(); g.disconnect(); } catch (e) { } }, duration + 50);
+                } catch (e) {
+                    // Audio may be blocked in some browsers without user gesture
+                    console.warn('Audio error', e);
+                }
+            }
+
+            // Expose simple beep on manual click (not used but helpful)
+            window.playBeep = playBeep;
+
+            // ------------ Initialize highlightedDay from storage ------------
+            if (localStorage.getItem('highlightedDay')) {
+                highlightedDay = localStorage.getItem('highlightedDay');
+            }
+
+            // optional: allow clicking dayLabel also to toggle highlight if clicked multiple times? Already opens picker
+
+            // Accessibility: keyboard shortcuts (optional)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 's') { // toggle stopwatch start/stop
+                    swStartBtn.click();
+                } else if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+                    swResetBtn.click();
+                }
+            });
+
+        })();
+    </script>
+</body>
+
+</html>
