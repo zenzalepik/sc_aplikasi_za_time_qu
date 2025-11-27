@@ -10,13 +10,11 @@ class TimerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeService = Provider.of<TimeService>(context);
-    final duration = timeService.timerCurrentRemaining;
-    final timerText =
-        "${two(duration.inMinutes)}:${two(duration.inSeconds % 60)}";
+    // Access TimeService without listening
+    final timeService = Provider.of<TimeService>(context, listen: false);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -25,46 +23,72 @@ class TimerPage extends StatelessWidget {
               Text(
                 "Timer",
                 style: GoogleFonts.ptSans(
-                  color: Colors.greenAccent,
+                  color: Theme.of(context).primaryColor,
                   fontSize: 32,
                 ),
               ),
               const SizedBox(height: 40),
-              Text(
-                timerText,
-                style: GoogleFonts.ptSans(
-                  fontSize: 70,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+
+              // Use Consumer for ticking text
+              Consumer<TimeService>(
+                builder: (context, timeService, child) {
+                  final duration = timeService.timerCurrentRemaining;
+                  final timerText =
+                      "${two(duration.inMinutes)}:${two(duration.inSeconds % 60)}";
+                  return Text(
+                    timerText,
+                    style: GoogleFonts.ptSans(
+                      fontSize: 70,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  );
+                },
               ),
+
               const SizedBox(height: 60),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildButton(
-                    label: "Start",
-                    onPressed: timeService.timerRunning
-                        ? null
-                        : timeService.startTimer,
-                  ),
-                  const SizedBox(width: 20),
-                  _buildButton(
-                    label: "Pause",
-                    onPressed: timeService.timerRunning
-                        ? timeService.stopTimer
-                        : null,
-                  ),
-                  const SizedBox(width: 20),
-                  _buildButton(
-                    label: "Reset",
-                    onPressed: timeService.resetTimer,
-                  ),
-                ],
+
+              // Use Selector for buttons
+              Selector<TimeService, bool>(
+                selector: (_, service) => service.timerRunning,
+                builder: (context, isRunning, child) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildButton(
+                        context,
+                        label: "Start",
+                        onPressed: isRunning ? null : timeService.startTimer,
+                      ),
+                      const SizedBox(width: 20),
+                      _buildButton(
+                        context,
+                        label: "Pause",
+                        onPressed: isRunning ? timeService.stopTimer : null,
+                      ),
+                      const SizedBox(width: 20),
+                      _buildButton(
+                        context,
+                        label: "Reset",
+                        onPressed: timeService.resetTimer,
+                      ),
+                    ],
+                  );
+                },
               ),
+
               const SizedBox(height: 40),
-              if (!timeService.timerRunning)
-                _buildDurationPicker(context, timeService),
+
+              // Use Selector for duration picker visibility
+              Selector<TimeService, bool>(
+                selector: (_, service) => service.timerRunning,
+                builder: (context, isRunning, child) {
+                  if (!isRunning) {
+                    return _buildDurationPicker(context, timeService);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ],
           ),
         ),
@@ -72,12 +96,16 @@ class TimerPage extends StatelessWidget {
     );
   }
 
-  Widget _buildButton({required String label, VoidCallback? onPressed}) {
+  Widget _buildButton(
+    BuildContext context, {
+    required String label,
+    VoidCallback? onPressed,
+  }) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.grey[900],
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).primaryColor,
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -121,7 +149,10 @@ class TimerPage extends StatelessWidget {
   ) {
     return TextButton(
       onPressed: () => timeService.setTimerDuration(duration),
-      child: Text(label, style: GoogleFonts.ptSans(color: Colors.greenAccent)),
+      child: Text(
+        label,
+        style: GoogleFonts.ptSans(color: Theme.of(context).primaryColor),
+      ),
     );
   }
 }

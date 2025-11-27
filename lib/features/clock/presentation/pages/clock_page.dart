@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/time_service.dart';
+import '../../../../core/services/ui_service.dart';
 
 class ClockPage extends StatefulWidget {
   const ClockPage({super.key});
@@ -83,17 +84,8 @@ class _ClockPageState extends State<ClockPage> {
 
   @override
   Widget build(BuildContext context) {
-    final timeService = Provider.of<TimeService>(context);
-
-    // Stopwatch Data
-    final sw = timeService.stopwatchElapsed;
-    final swText =
-        "${two(sw.inMinutes)}:${two(sw.inSeconds % 60)}:${two((sw.inMilliseconds ~/ 10) % 100)}";
-
-    // Timer Data
-    final timerDuration = timeService.timerCurrentRemaining;
-    final timerText =
-        "${two(timerDuration.inMinutes)}:${two(timerDuration.inSeconds % 60)}";
+    // Access TimeService without listening to avoid full rebuilds
+    final timeService = Provider.of<TimeService>(context, listen: false);
 
     // Determine the color for the current day displayed
     final currentDayIndex = DateTime.now().weekday - 1;
@@ -149,43 +141,48 @@ class _ClockPageState extends State<ClockPage> {
 
             // Redesigned Clock Display
             Center(
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        hourStr,
-                        style: GoogleFonts.orbitron(
-                          fontSize: 100,
-                          fontWeight: FontWeight.bold,
-                          height: 0.9,
+              child: GestureDetector(
+                onTap: () {
+                  Provider.of<UIService>(context, listen: false).toggleNavbar();
+                },
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          hourStr,
+                          style: GoogleFonts.orbitron(
+                            fontSize: 100,
+                            fontWeight: FontWeight.bold,
+                            height: 0.9,
+                          ),
                         ),
-                      ),
-                      Text(
-                        minuteStr,
-                        style: GoogleFonts.orbitron(
-                          fontSize: 100,
-                          fontWeight: FontWeight.bold,
-                          height: 0.9,
+                        Text(
+                          minuteStr,
+                          style: GoogleFonts.orbitron(
+                            fontSize: 100,
+                            fontWeight: FontWeight.bold,
+                            height: 0.9,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    bottom: 10,
-                    right: -40,
-                    child: Text(
-                      secondStr,
-                      style: GoogleFonts.orbitron(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white.withValues(alpha: 0.5),
+                      ],
+                    ),
+                    Positioned(
+                      bottom: 10,
+                      right: -40,
+                      child: Text(
+                        secondStr,
+                        style: GoogleFonts.orbitron(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -206,24 +203,42 @@ class _ClockPageState extends State<ClockPage> {
               ),
             ),
 
-            Center(
-              child: Text(swText, style: GoogleFonts.ptSans(fontSize: 50)),
+            // Use Consumer to rebuild only this part when TimeService updates
+            Consumer<TimeService>(
+              builder: (context, timeService, child) {
+                final sw = timeService.stopwatchElapsed;
+                final swText =
+                    "${two(sw.inMinutes)}:${two(sw.inSeconds % 60)}:${two((sw.inMilliseconds ~/ 10) % 100)}";
+                return Center(
+                  child: Text(swText, style: GoogleFonts.ptSans(fontSize: 50)),
+                );
+              },
             ),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextButton(
-                  onPressed: timeService.stopwatchRunning
-                      ? null
-                      : timeService.startStopwatch,
-                  child: Text("Start", style: GoogleFonts.ptSans()),
-                ),
-                TextButton(
-                  onPressed: timeService.stopwatchRunning
-                      ? timeService.stopStopwatch
-                      : null,
-                  child: Text("Stop", style: GoogleFonts.ptSans()),
+                // Use Selector to rebuild buttons only when running state changes
+                Selector<TimeService, bool>(
+                  selector: (_, service) => service.stopwatchRunning,
+                  builder: (context, isRunning, child) {
+                    return Row(
+                      children: [
+                        TextButton(
+                          onPressed: isRunning
+                              ? null
+                              : timeService.startStopwatch,
+                          child: Text("Start", style: GoogleFonts.ptSans()),
+                        ),
+                        TextButton(
+                          onPressed: isRunning
+                              ? timeService.stopStopwatch
+                              : null,
+                          child: Text("Stop", style: GoogleFonts.ptSans()),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 TextButton(
                   onPressed: timeService.resetStopwatch,
@@ -241,24 +256,41 @@ class _ClockPageState extends State<ClockPage> {
 
             Text("Timer", style: GoogleFonts.ptSans(fontSize: 28)),
 
-            Center(
-              child: Text(timerText, style: GoogleFonts.ptSans(fontSize: 50)),
+            // Use Consumer for Timer display
+            Consumer<TimeService>(
+              builder: (context, timeService, child) {
+                final timerDuration = timeService.timerCurrentRemaining;
+                final timerText =
+                    "${two(timerDuration.inMinutes)}:${two(timerDuration.inSeconds % 60)}";
+                return Center(
+                  child: Text(
+                    timerText,
+                    style: GoogleFonts.ptSans(fontSize: 50),
+                  ),
+                );
+              },
             ),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextButton(
-                  onPressed: timeService.timerRunning
-                      ? null
-                      : timeService.startTimer,
-                  child: Text("Start", style: GoogleFonts.ptSans()),
-                ),
-                TextButton(
-                  onPressed: timeService.timerRunning
-                      ? timeService.stopTimer
-                      : null,
-                  child: Text("Pause", style: GoogleFonts.ptSans()),
+                // Use Selector for Timer buttons
+                Selector<TimeService, bool>(
+                  selector: (_, service) => service.timerRunning,
+                  builder: (context, isRunning, child) {
+                    return Row(
+                      children: [
+                        TextButton(
+                          onPressed: isRunning ? null : timeService.startTimer,
+                          child: Text("Start", style: GoogleFonts.ptSans()),
+                        ),
+                        TextButton(
+                          onPressed: isRunning ? timeService.stopTimer : null,
+                          child: Text("Pause", style: GoogleFonts.ptSans()),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 TextButton(
                   onPressed: timeService.resetTimer,
