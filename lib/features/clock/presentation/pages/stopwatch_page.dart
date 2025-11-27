@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/time_service.dart';
+import '../../../../core/services/theme_service.dart';
 
 class StopwatchPage extends StatelessWidget {
   const StopwatchPage({super.key});
@@ -10,8 +10,8 @@ class StopwatchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Access TimeService without listening
     final timeService = Provider.of<TimeService>(context, listen: false);
+    final themeService = Provider.of<ThemeService>(context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -22,7 +22,7 @@ class StopwatchPage extends StatelessWidget {
             children: [
               Text(
                 "Stopwatch",
-                style: GoogleFonts.ptSans(
+                style: themeService.getSecondaryTextStyle(
                   color: Theme.of(context).primaryColor,
                   fontSize: 32,
                 ),
@@ -37,7 +37,7 @@ class StopwatchPage extends StatelessWidget {
                       "${two(sw.inMinutes)}:${two(sw.inSeconds % 60)}:${two((sw.inMilliseconds ~/ 10) % 100)}";
                   return Text(
                     swText,
-                    style: GoogleFonts.ptSans(
+                    style: themeService.getPrimaryTextStyle(
                       fontSize: 70,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
@@ -90,6 +90,7 @@ class StopwatchPage extends StatelessWidget {
     required String label,
     VoidCallback? onPressed,
   }) {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -98,7 +99,10 @@ class StopwatchPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      child: Text(label, style: GoogleFonts.ptSans(fontSize: 18)),
+      child: Text(
+        label,
+        style: themeService.getSecondaryTextStyle(fontSize: 18),
+      ),
     );
   }
 }

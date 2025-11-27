@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/theme_service.dart';
 
@@ -16,23 +15,34 @@ class SettingsPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
               Text(
                 "Settings",
-                style: GoogleFonts.ptSans(
+                style: themeService.getSecondaryTextStyle(
                   color: themeService.primaryColor,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 40),
+
+              // Colors Section
+              Text(
+                "Colors",
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
               _buildColorSection(
                 context,
                 "Primary Color",
                 themeService.primaryColor,
                 (color) => themeService.setPrimaryColor(color),
+                themeService,
               ),
               const SizedBox(height: 30),
               _buildColorSection(
@@ -40,6 +50,37 @@ class SettingsPage extends StatelessWidget {
                 "Background Color",
                 themeService.backgroundColor,
                 (color) => themeService.setBackgroundColor(color),
+                themeService,
+              ),
+
+              const SizedBox(height: 40),
+              Divider(color: themeService.primaryColor.withValues(alpha: 0.3)),
+              const SizedBox(height: 20),
+
+              // Fonts Section
+              Text(
+                "Fonts",
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildFontSection(
+                context,
+                "Clock Font (Primary)",
+                themeService.primaryFont,
+                (font) => themeService.setPrimaryFont(font),
+                themeService,
+              ),
+              const SizedBox(height: 30),
+              _buildFontSection(
+                context,
+                "UI Font (Secondary)",
+                themeService.secondaryFont,
+                (font) => themeService.setSecondaryFont(font),
+                themeService,
               ),
             ],
           ),
@@ -53,14 +94,14 @@ class SettingsPage extends StatelessWidget {
     String title,
     Color currentColor,
     Function(Color) onColorChanged,
+    ThemeService themeService,
   ) {
-    final themeService = Provider.of<ThemeService>(context, listen: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: GoogleFonts.ptSans(
+          style: themeService.getSecondaryTextStyle(
             color: themeService.primaryColor,
             fontSize: 20,
           ),
@@ -81,6 +122,62 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildFontSection(
+    BuildContext context,
+    String title,
+    String currentFont,
+    Function(String) onFontChanged,
+    ThemeService themeService,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: themeService.getSecondaryTextStyle(
+            color: themeService.primaryColor,
+            fontSize: 20,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: themeService.primaryColor.withValues(alpha: 0.5),
+            ),
+          ),
+          child: DropdownButton<String>(
+            value: currentFont,
+            isExpanded: true,
+            dropdownColor: Colors.grey[900],
+            underline: const SizedBox(),
+            icon: Icon(Icons.arrow_drop_down, color: themeService.primaryColor),
+            items: ThemeService.availableFonts.keys.map((String fontName) {
+              return DropdownMenuItem<String>(
+                value: fontName,
+                child: Text(
+                  fontName,
+                  style: ThemeService.availableFonts[fontName]!(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                onFontChanged(newValue);
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   void _showColorPicker(
     BuildContext context,
     Color currentColor,
@@ -89,24 +186,69 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Pick a color'),
-          content: SingleChildScrollView(
-            child: ColorPicker(
-              pickerColor: currentColor,
-              onColorChanged: onColorChanged,
-            ),
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              child: const Text('Got it'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+        return _ColorPickerDialog(
+          initialColor: currentColor,
+          onColorChanged: onColorChanged,
         );
       },
+    );
+  }
+}
+
+class _ColorPickerDialog extends StatefulWidget {
+  final Color initialColor;
+  final Function(Color) onColorChanged;
+
+  const _ColorPickerDialog({
+    required this.initialColor,
+    required this.onColorChanged,
+  });
+
+  @override
+  State<_ColorPickerDialog> createState() => _ColorPickerDialogState();
+}
+
+class _ColorPickerDialogState extends State<_ColorPickerDialog> {
+  late Color _currentColor;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentColor = widget.initialColor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.grey[900],
+      title: const Text('Pick a color', style: TextStyle(color: Colors.white)),
+      content: SingleChildScrollView(
+        child: ColorPicker(
+          pickerColor: _currentColor,
+          onColorChanged: (color) {
+            setState(() {
+              _currentColor = color;
+            });
+          },
+          labelTypes: const [],
+          pickerAreaHeightPercent: 0.8,
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        ElevatedButton(
+          child: const Text('Select'),
+          onPressed: () {
+            widget.onColorChanged(_currentColor);
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/time_service.dart';
+import '../../../../core/services/theme_service.dart';
 
 class TimerPage extends StatelessWidget {
   const TimerPage({super.key});
@@ -10,8 +10,8 @@ class TimerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Access TimeService without listening
     final timeService = Provider.of<TimeService>(context, listen: false);
+    final themeService = Provider.of<ThemeService>(context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -22,7 +22,7 @@ class TimerPage extends StatelessWidget {
             children: [
               Text(
                 "Timer",
-                style: GoogleFonts.ptSans(
+                style: themeService.getSecondaryTextStyle(
                   color: Theme.of(context).primaryColor,
                   fontSize: 32,
                 ),
@@ -37,7 +37,7 @@ class TimerPage extends StatelessWidget {
                       "${two(duration.inMinutes)}:${two(duration.inSeconds % 60)}";
                   return Text(
                     timerText,
-                    style: GoogleFonts.ptSans(
+                    style: themeService.getPrimaryTextStyle(
                       fontSize: 70,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
@@ -101,6 +101,7 @@ class TimerPage extends StatelessWidget {
     required String label,
     VoidCallback? onPressed,
   }) {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -109,7 +110,10 @@ class TimerPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      child: Text(label, style: GoogleFonts.ptSans(fontSize: 18)),
+      child: Text(
+        label,
+        style: themeService.getSecondaryTextStyle(fontSize: 18),
+      ),
     );
   }
 
@@ -147,11 +151,14 @@ class TimerPage extends StatelessWidget {
     Duration duration,
     TimeService timeService,
   ) {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
     return TextButton(
       onPressed: () => timeService.setTimerDuration(duration),
       child: Text(
         label,
-        style: GoogleFonts.ptSans(color: Theme.of(context).primaryColor),
+        style: themeService.getSecondaryTextStyle(
+          color: Theme.of(context).primaryColor,
+        ),
       ),
     );
   }
