@@ -18,7 +18,7 @@ class SettingsPage extends StatelessWidget {
           child: ListView(
             children: [
               Text(
-                "Settings",
+                "Settings".toUpperCase(),
                 style: themeService.getSecondaryTextStyle(
                   color: themeService.primaryColor,
                   fontSize: 32,
@@ -57,6 +57,28 @@ class SettingsPage extends StatelessWidget {
               Divider(color: themeService.primaryColor.withValues(alpha: 0.3)),
               const SizedBox(height: 20),
 
+              // Clock Card Section
+              Text(
+                "Clock Card",
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildColorSection(
+                context,
+                "Card Background Color",
+                themeService.cardColor,
+                (color) => themeService.setCardColor(color),
+                themeService,
+              ),
+
+              const SizedBox(height: 40),
+              Divider(color: themeService.primaryColor.withValues(alpha: 0.3)),
+              const SizedBox(height: 20),
+
               // Fonts Section
               Text(
                 "Fonts",
@@ -81,6 +103,74 @@ class SettingsPage extends StatelessWidget {
                 themeService.secondaryFont,
                 (font) => themeService.setSecondaryFont(font),
                 themeService,
+              ),
+
+              const SizedBox(height: 40),
+              Divider(color: themeService.primaryColor.withValues(alpha: 0.3)),
+              const SizedBox(height: 20),
+
+              // Notifications Section
+              Text(
+                "Notifications",
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildToggle(
+                context,
+                themeService,
+                "Show Snackbar Notifications",
+                themeService.useSnackbar,
+                (value) => themeService.setUseSnackbar(value),
+              ),
+
+              const SizedBox(height: 40),
+              Divider(color: themeService.primaryColor.withValues(alpha: 0.3)),
+              const SizedBox(height: 20),
+
+              // Display Section
+              Text(
+                "Display",
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildToggle(
+                context,
+                themeService,
+                "Show Day Name",
+                themeService.showDay,
+                (value) => themeService.setShowDay(value),
+              ),
+              const SizedBox(height: 15),
+              _buildToggle(
+                context,
+                themeService,
+                "Show Date",
+                themeService.showDate,
+                (value) => themeService.setShowDate(value),
+              ),
+              const SizedBox(height: 15),
+              _buildToggle(
+                context,
+                themeService,
+                "Show Stopwatch (Clock Page)",
+                themeService.showStopwatch,
+                (value) => themeService.setShowStopwatch(value),
+              ),
+              const SizedBox(height: 15),
+              _buildToggle(
+                context,
+                themeService,
+                "Show Timer (Clock Page)",
+                themeService.showTimer,
+                (value) => themeService.setShowTimer(value),
               ),
             ],
           ),
@@ -173,6 +263,34 @@ class SettingsPage extends StatelessWidget {
               }
             },
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggle(
+    BuildContext context,
+    ThemeService themeService,
+    String label,
+    bool value,
+    Function(bool) onChanged,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: themeService.getSecondaryTextStyle(
+              color: themeService.primaryColor,
+              fontSize: 18,
+            ),
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: themeService.primaryColor,
         ),
       ],
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/time_service.dart';
 import '../../../../core/services/theme_service.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 
 class TimerPage extends StatelessWidget {
   const TimerPage({super.key});
@@ -21,7 +22,7 @@ class TimerPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Timer",
+                "Timer".toUpperCase(),
                 style: themeService.getSecondaryTextStyle(
                   color: Theme.of(context).primaryColor,
                   fontSize: 32,
@@ -52,31 +53,66 @@ class TimerPage extends StatelessWidget {
               Selector<TimeService, bool>(
                 selector: (_, service) => service.timerRunning,
                 builder: (context, isRunning, child) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildButton(
-                        context,
-                        label: "Start",
-                        onPressed: isRunning ? null : timeService.startTimer,
-                      ),
-                      const SizedBox(width: 20),
-                      _buildButton(
-                        context,
-                        label: "Pause",
-                        onPressed: isRunning ? timeService.stopTimer : null,
-                      ),
-                      const SizedBox(width: 20),
-                      _buildButton(
-                        context,
-                        label: "Reset",
-                        onPressed: timeService.resetTimer,
-                      ),
-                    ],
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          // ← Tambahkan ini
+                          child: _buildButton(
+                            context,
+                            label: "Start",
+                            onPressed: isRunning
+                                ? null
+                                : () {
+                                    timeService.startTimer();
+                                    SnackbarHelper.showSnackbar(
+                                      context,
+                                      'Timer started',
+                                      themeService,
+                                    );
+                                  },
+                          ),
+                        ),
+                        const SizedBox(width: 8), // Kurangi spacing
+                        Expanded(
+                          // ← Tambahkan ini
+                          child: _buildButton(
+                            context,
+                            label: "Pause",
+                            onPressed: isRunning
+                                ? () {
+                                    timeService.stopTimer();
+                                    SnackbarHelper.showSnackbar(
+                                      context,
+                                      'Timer paused',
+                                      themeService,
+                                    );
+                                  }
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 8), // Kurangi spacing
+                        Expanded(
+                          // ← Tambahkan ini
+                          child: _buildButton(
+                            context,
+                            label: "Reset",
+                            onPressed: () {
+                              timeService.resetTimer();
+                              SnackbarHelper.showSnackbar(
+                                context,
+                                'Timer reset',
+                                themeService,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
-
               const SizedBox(height: 40),
 
               // Use Selector for duration picker visibility
@@ -107,7 +143,7 @@ class TimerPage extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.grey[900],
         foregroundColor: Theme.of(context).primaryColor,
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       child: Text(

@@ -4,8 +4,12 @@ import 'package:provider/provider.dart';
 import 'core/services/time_service.dart';
 import 'core/services/theme_service.dart';
 import 'core/services/ui_service.dart';
+import 'package:flutter/services.dart'; // ← Import ini
 
 void main() async {
+  // Set full screen sebelum runApp
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
   WidgetsFlutterBinding.ensureInitialized();
 
   final timeService = TimeService();

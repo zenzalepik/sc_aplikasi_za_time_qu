@@ -6,6 +6,8 @@ import 'package:sc_aplikasi_za_time_qu/features/clock/presentation/pages/stopwat
 import 'package:sc_aplikasi_za_time_qu/features/clock/presentation/pages/timer_page.dart';
 import 'package:sc_aplikasi_za_time_qu/features/settings/presentation/pages/settings_page.dart';
 import '../../../../core/services/ui_service.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -49,25 +51,76 @@ class _HomePageState extends State<HomePage> {
             type: BottomNavigationBarType.fixed,
             currentIndex: index,
             onTap: (i) => setState(() => index = i),
-            items: const [
+            selectedLabelStyle: TextStyle(fontSize: 11), // ← Teks terpilih
+            unselectedLabelStyle: TextStyle(
+              fontSize: 9,
+            ), // ← Teks tidak terpilih
+            items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.access_time),
+                icon: Icon(LineAwesomeIcons.clock),
                 label: "Clock",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.timer),
+                icon: Icon(LineAwesomeIcons.stopwatch_solid),
                 label: "Stopwatch",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.hourglass_bottom),
+                icon: Icon(LineAwesomeIcons.hourglass),
                 label: "Timer",
               ),
-              BottomNavigationBarItem(icon: Icon(Icons.alarm), label: "Alarm"),
               BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
+                icon: Icon(LineAwesomeIcons.bell),
+                label: "Alarm",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(LineAwesomeIcons.cog_solid),
                 label: "Settings",
               ),
             ],
+            /*const [
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.clock), // 🕒
+                label: "Clock",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.stopwatch), // ⏱️
+                label: "Stopwatch",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.hourglass), // ⌛
+                label: "Timer",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.bell), // 🔔
+                label: "Alarm",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(FontAwesomeIcons.gear), // ⚙️
+                label: "Settings",
+              ),
+            ],*/
+            //const [
+            //   BottomNavigationBarItem(
+            //     icon: Icon(Icons.access_time_outlined),
+            //     label: "Clock",
+            //   ),
+            //   BottomNavigationBarItem(
+            //     icon: Icon(Icons.timer_outlined),
+            //     label: "Stopwatch",
+            //   ),
+            //   BottomNavigationBarItem(
+            //     icon: Icon(Icons.hourglass_bottom_outlined),
+            //     label: "Timer",
+            //   ),
+            //   BottomNavigationBarItem(
+            //     icon: Icon(Icons.alarm_add_outlined),
+            //     label: "Alarm",
+            //   ),
+            //   BottomNavigationBarItem(
+            //     icon: Icon(Icons.settings_outlined),
+            //     label: "Settings",
+            //   ),
+            // ],
           ),
         ),
       ),

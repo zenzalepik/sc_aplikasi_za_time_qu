@@ -32,7 +32,6 @@ class _ClockPageState extends State<ClockPage> {
   ];
 
   Map<int, Color> dayColors = {};
-
   int selectedDay = DateTime.now().weekday - 1;
 
   @override
@@ -96,342 +95,442 @@ class _ClockPageState extends State<ClockPage> {
     final selectedDayColor =
         dayColors[selectedDay] ?? themeService.primaryColor;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-            Center(
-              child: GestureDetector(
-                onTap: () => showDialog(
-                  context: context,
-                  builder: (_) => daysDialog(themeService),
+    return Scaffold(
+      backgroundColor: themeService.backgroundColor,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(
+                    context,
+                  ).size.height, // ← Tinggi layar
                 ),
-                child: Text(
-                  dayName,
-                  style: themeService.getSecondaryTextStyle(
-                    color: currentDayColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Center(
-              child: GestureDetector(
-                onTap: () => showDialog(
-                  context: context,
-                  builder: (_) => daysDialog(themeService),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: selectedDayColor,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Text(
-                    "Pilih Hari: ${days[selectedDay]}",
-                    style: themeService.getSecondaryTextStyle(
-                      color: Colors.black, // Contrast color for text
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // Redesigned Clock Display
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  Provider.of<UIService>(context, listen: false).toggleNavbar();
-                },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          hourStr,
-                          style: themeService.getPrimaryTextStyle(
-                            fontSize: 100,
-                            fontWeight: FontWeight.bold,
-                            height: 0.9,
-                            color: themeService.primaryColor,
-                          ),
-                        ),
-                        Text(
-                          minuteStr,
-                          style: themeService.getPrimaryTextStyle(
-                            fontSize: 100,
-                            fontWeight: FontWeight.bold,
-                            height: 0.9,
-                            color: themeService.primaryColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Positioned(
-                      bottom: 10,
-                      right: -40,
-                      child: Text(
-                        secondStr,
-                        style: themeService.getPrimaryTextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: themeService.primaryColor.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            Center(
-              child: Text(
-                date,
-                style: themeService.getSecondaryTextStyle(
-                  fontSize: 26,
-                  color: themeService.primaryColor,
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            // Conditionally show Stopwatch section only if elapsed time > 0
-            Consumer<TimeService>(
-              builder: (context, ts, child) {
-                if (ts.stopwatchElapsed > Duration.zero) {
-                  final sw = ts.stopwatchElapsed;
-                  final swText =
-                      "${two(sw.inMinutes)}:${two(sw.inSeconds % 60)}:${two((sw.inMilliseconds ~/ 10) % 100)}";
-
-                  return Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    // mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween, // ← Penting
                     children: [
-                      Container(
-                        height: 1,
-                        color: themeService.primaryColor.withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 20),
-
-                      Text(
-                        "Stopwatch",
-                        style: themeService.getSecondaryTextStyle(
-                          color: themeService.primaryColor,
-                          fontSize: 28,
-                        ),
-                      ),
-
-                      Center(
-                        child: Text(
-                          swText,
-                          style: themeService.getSecondaryTextStyle(
-                            fontSize: 50,
-                            color: themeService.primaryColor,
-                          ),
-                        ),
-                      ),
-
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Selector<TimeService, bool>(
-                            selector: (_, service) => service.stopwatchRunning,
-                            builder: (context, isRunning, child) {
-                              return Row(
-                                children: [
-                                  TextButton(
-                                    onPressed: isRunning
-                                        ? null
-                                        : timeService.startStopwatch,
-                                    child: Text(
-                                      "Start",
-                                      style: themeService.getSecondaryTextStyle(
-                                        color: themeService.primaryColor,
+                          // Day name with color indicator
+                          if (themeService.showDay)
+                            GestureDetector(
+                              onTap: () {
+                                _showDaysDialog(themeService);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: currentDayColor.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: currentDayColor,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: currentDayColor,
+                                        shape: BoxShape.circle,
                                       ),
                                     ),
-                                  ),
-                                  TextButton(
-                                    onPressed: isRunning
-                                        ? timeService.stopStopwatch
-                                        : null,
-                                    child: Text(
-                                      "Stop",
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      dayName,
                                       style: themeService.getSecondaryTextStyle(
-                                        color: themeService.primaryColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: currentDayColor,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          TextButton(
-                            onPressed: timeService.resetStopwatch,
-                            child: Text(
-                              "Reset",
-                              style: themeService.getSecondaryTextStyle(
-                                color: themeService.primaryColor,
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
+                          if (themeService.showDay && themeService.showDate)
+                            const SizedBox(width: 12),
+
+                          // Conditionally show date
+                          if (themeService.showDate)
+                            Center(
+                              child: Text(
+                                date,
+                                style: themeService.getSecondaryTextStyle(
+                                  fontSize: 12,
+                                  color: themeService.primaryColor,
+                                ),
+                              ),
+                            ),
+                          if (themeService.showDate) const SizedBox(height: 12),
                         ],
                       ),
 
-                      const SizedBox(height: 20),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-
-            // Conditionally show Timer section only if duration > 0
-            Consumer<TimeService>(
-              builder: (context, ts, child) {
-                if (ts.timerCurrentRemaining > Duration.zero) {
-                  final timerDuration = ts.timerCurrentRemaining;
-                  final timerText =
-                      "${two(timerDuration.inMinutes)}:${two(timerDuration.inSeconds % 60)}";
-
-                  return Column(
-                    children: [
-                      Container(
-                        height: 1,
-                        color: themeService.primaryColor.withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 20),
-
-                      Text(
-                        "Timer",
-                        style: themeService.getSecondaryTextStyle(
-                          fontSize: 28,
-                          color: themeService.primaryColor,
+                      // Main clock display
+                      GestureDetector(
+                        onTap: () {
+                          Provider.of<UIService>(
+                            context,
+                            listen: false,
+                          ).toggleNavbar();
+                        },
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            // Saya ingin full area tinggi layar
+                            Column(
+                              // mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween, // ← Penting
+                              children: [
+                                // Hour card
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 96,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: themeService.cardColor,
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          hourStr,
+                                          textAlign: TextAlign.center,
+                                          style: themeService
+                                              .getPrimaryTextStyle(
+                                                fontSize: 150,
+                                                fontWeight: FontWeight.bold,
+                                                height: 0.9,
+                                                color:
+                                                    themeService.primaryColor,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                // Minutes card
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 96,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: themeService.cardColor,
+                                          borderRadius: BorderRadius.circular(
+                                            15,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          minuteStr,
+                                          textAlign: TextAlign.center,
+                                          style: themeService
+                                              .getPrimaryTextStyle(
+                                                fontSize: 150,
+                                                fontWeight: FontWeight.bold,
+                                                height: 0.9,
+                                                color:
+                                                    themeService.primaryColor,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Positioned(
+                              bottom: -48,
+                              right: 40,
+                              child: Text(
+                                secondStr,
+                                style: themeService.getPrimaryTextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: themeService.primaryColor.withOpacity(
+                                    0.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
 
-                      Center(
-                        child: Text(
-                          timerText,
-                          style: themeService.getSecondaryTextStyle(
-                            fontSize: 50,
-                            color: themeService.primaryColor,
-                          ),
-                        ),
-                      ),
+                      const SizedBox(height: 30),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Selector<TimeService, bool>(
-                            selector: (_, service) => service.timerRunning,
-                            builder: (context, isRunning, child) {
-                              return Row(
+                      // Conditionally show Stopwatch section
+                      if (themeService.showStopwatch
+                      // && !themeService.showTimer
+                      )
+                        Consumer<TimeService>(
+                          builder: (context, ts, child) {
+                            if (ts.stopwatchElapsed > Duration.zero) {
+                              final sw = ts.stopwatchElapsed;
+                              final swText =
+                                  "${two(sw.inMinutes.remainder(60))}:${two(sw.inSeconds.remainder(60))}:${two((sw.inMilliseconds ~/ 10) % 100)}";
+
+                              return Column(
                                 children: [
-                                  TextButton(
-                                    onPressed: isRunning
-                                        ? null
-                                        : timeService.startTimer,
+                                  Container(
+                                    height: 1,
+                                    color: themeService.primaryColor
+                                        .withOpacity(0.3),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    "Stopwatch",
+                                    style: themeService.getSecondaryTextStyle(
+                                      color: themeService.primaryColor,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+
+                                  Center(
                                     child: Text(
-                                      "Start",
+                                      swText,
                                       style: themeService.getSecondaryTextStyle(
+                                        fontSize: 50,
                                         color: themeService.primaryColor,
                                       ),
                                     ),
                                   ),
-                                  TextButton(
-                                    onPressed: isRunning
-                                        ? timeService.stopTimer
-                                        : null,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Selector<TimeService, bool>(
+                                        selector: (_, service) =>
+                                            service.stopwatchRunning,
+                                        builder: (context, isRunning, child) {
+                                          return Row(
+                                            children: [
+                                              TextButton(
+                                                onPressed: isRunning
+                                                    ? null
+                                                    : timeService
+                                                          .startStopwatch,
+                                                child: Text(
+                                                  "Start",
+                                                  style: themeService
+                                                      .getSecondaryTextStyle(
+                                                        color: themeService
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                              ),
+                                              TextButton(
+                                                onPressed: isRunning
+                                                    ? timeService.stopStopwatch
+                                                    : null,
+                                                child: Text(
+                                                  "Stop",
+                                                  style: themeService
+                                                      .getSecondaryTextStyle(
+                                                        color: themeService
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                      TextButton(
+                                        onPressed: timeService.resetStopwatch,
+                                        child: Text(
+                                          "Reset",
+                                          style: themeService
+                                              .getSecondaryTextStyle(
+                                                color:
+                                                    themeService.primaryColor,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+
+                      // Conditionally show Timer section
+                      if (themeService.showTimer
+                      // && !themeService.showStopwatch
+                      )
+                        Consumer<TimeService>(
+                          builder: (context, ts, child) {
+                            if (ts.timerCurrentRemaining > Duration.zero) {
+                              final timerDuration = ts.timerCurrentRemaining;
+                              final timerText =
+                                  "${two(timerDuration.inMinutes.remainder(60))}:${two(timerDuration.inSeconds.remainder(60))}";
+
+                              return Column(
+                                children: [
+                                  Container(
+                                    height: 1,
+                                    color: themeService.primaryColor
+                                        .withOpacity(0.3),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    "Timer",
+                                    style: themeService.getSecondaryTextStyle(
+                                      fontSize: 16,
+                                      color: themeService.primaryColor,
+                                    ),
+                                  ),
+                                  Center(
                                     child: Text(
-                                      "Pause",
+                                      timerText,
                                       style: themeService.getSecondaryTextStyle(
+                                        fontSize: 50,
                                         color: themeService.primaryColor,
                                       ),
                                     ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Selector<TimeService, bool>(
+                                        selector: (_, service) =>
+                                            service.timerRunning,
+                                        builder: (context, isRunning, child) {
+                                          return Row(
+                                            children: [
+                                              TextButton(
+                                                onPressed: isRunning
+                                                    ? null
+                                                    : timeService.startTimer,
+                                                child: Text(
+                                                  "Start",
+                                                  style: themeService
+                                                      .getSecondaryTextStyle(
+                                                        color: themeService
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                              ),
+                                              TextButton(
+                                                onPressed: isRunning
+                                                    ? timeService.stopTimer
+                                                    : null,
+                                                child: Text(
+                                                  "Pause",
+                                                  style: themeService
+                                                      .getSecondaryTextStyle(
+                                                        color: themeService
+                                                            .primaryColor,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                      TextButton(
+                                        onPressed: timeService.resetTimer,
+                                        child: Text(
+                                          "Reset",
+                                          style: themeService
+                                              .getSecondaryTextStyle(
+                                                color:
+                                                    themeService.primaryColor,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               );
-                            },
-                          ),
-                          TextButton(
-                            onPressed: timeService.resetTimer,
-                            child: Text(
-                              "Reset",
-                              style: themeService.getSecondaryTextStyle(
-                                color: themeService.primaryColor,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
                     ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Dialog daysDialog(ThemeService themeService) {
-    return Dialog(
-      backgroundColor: themeService.backgroundColor,
-      child: SizedBox(
-        height: 330,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 1.5,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemCount: days.length,
-            itemBuilder: (_, i) {
-              final dayColor = dayColors[i] ?? Colors.grey[800];
-              return GestureDetector(
-                onTap: () {
-                  setState(() => selectedDay = i);
-                  Navigator.pop(context); // Close day selection dialog
-                  _showColorPicker(i, themeService); // Open color picker
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: dayColor,
-                    borderRadius: BorderRadius.circular(10),
-                    border: i == selectedDay
-                        ? Border.all(color: Colors.white, width: 2)
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    days[i],
-                    style: themeService.getSecondaryTextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+  void _showDaysDialog(ThemeService themeService) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: themeService.backgroundColor,
+        child: SizedBox(
+          height: 330,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 1.5,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: days.length,
+              itemBuilder: (_, i) {
+                final dayColor = dayColors[i] ?? Colors.grey[800];
+                return GestureDetector(
+                  onTap: () {
+                    setState(() => selectedDay = i);
+                    Navigator.pop(context); // Close day selection dialog
+                    _showColorPicker(i, themeService); // Open color picker
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: dayColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: i == selectedDay
+                          ? Border.all(color: Colors.white, width: 2)
+                          : null,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      days[i],
+                      style: themeService.getSecondaryTextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
