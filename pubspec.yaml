@@ -40,6 +40,10 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   font_awesome_flutter: ^10.12.0
   line_awesome_flutter: ^3.0.1
+  audioplayers: ^6.1.0
+  vibration: ^2.0.0
+  flutter_local_notifications: ^18.0.1
+  android_alarm_manager_plus: ^4.0.3
   
 
 dev_dependencies:
@@ -101,4 +105,14 @@ flutter:
   # Assets untuk logo app
   assets:
     - assets/logo_app.png
+    - assets/sounds/
 
+# Konfigurasi untuk launcher icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo_app.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/logo_app.png"
+  # Untuk iOS
+  remove_alpha_ios: true

@@ -1,9 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Required for Google Fonts to download from server -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Required for alarm vibration -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- Required to keep alarm running -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     
     <application
-        android:label="sc_aplikasi_za_time_qu"
+        android:label="ZaTimeQu"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
