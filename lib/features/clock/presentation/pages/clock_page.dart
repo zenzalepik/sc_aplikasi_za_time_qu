@@ -190,80 +190,75 @@ class _ClockPageState extends State<ClockPage> {
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
-                            // Saya ingin full area tinggi layar
-                            Column(
-                              // mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween, // ← Penting
-                              children: [
-                                // Hour card
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 96,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: themeService.cardColor,
-                                          borderRadius: BorderRadius.circular(
-                                            15,
+                            // Responsive layout based on screen orientation
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final screenWidth = MediaQuery.of(
+                                  context,
+                                ).size.width;
+                                final screenHeight = MediaQuery.of(
+                                  context,
+                                ).size.height;
+                                final isLandscape = screenWidth > screenHeight;
+
+                                // Card builder helper
+                                Widget buildCard(String value) {
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 96,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: themeService.cardColor,
+                                            borderRadius: BorderRadius.circular(
+                                              15,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            value,
+                                            textAlign: TextAlign.center,
+                                            style: themeService
+                                                .getPrimaryTextStyle(
+                                                  fontSize: 150,
+                                                  fontWeight: FontWeight.bold,
+                                                  height: 0.9,
+                                                  color:
+                                                      themeService.primaryColor,
+                                                ),
                                           ),
                                         ),
-                                        child: Text(
-                                          hourStr,
-                                          textAlign: TextAlign.center,
-                                          style: themeService
-                                              .getPrimaryTextStyle(
-                                                fontSize: 150,
-                                                fontWeight: FontWeight.bold,
-                                                height: 0.9,
-                                                color:
-                                                    themeService.primaryColor,
-                                              ),
-                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                // Minutes card
-                                Row(
+                                    ],
+                                  );
+                                }
+
+                                // Horizontal layout for landscape (width > height)
+                                if (isLandscape) {
+                                  return Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Expanded(child: buildCard(hourStr)),
+                                      const SizedBox(width: 10),
+                                      Expanded(child: buildCard(minuteStr)),
+                                    ],
+                                  );
+                                }
+
+                                // Vertical layout for portrait (height > width)
+                                return Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Expanded(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 96,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: themeService.cardColor,
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          minuteStr,
-                                          textAlign: TextAlign.center,
-                                          style: themeService
-                                              .getPrimaryTextStyle(
-                                                fontSize: 150,
-                                                fontWeight: FontWeight.bold,
-                                                height: 0.9,
-                                                color:
-                                                    themeService.primaryColor,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
+                                    buildCard(hourStr),
+                                    const SizedBox(height: 10),
+                                    buildCard(minuteStr),
                                   ],
-                                ),
-                              ],
+                                );
+                              },
                             ),
                             Positioned(
                               bottom: -48,
