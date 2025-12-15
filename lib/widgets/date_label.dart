@@ -19,60 +19,67 @@ class DateLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        // Day name with color indicator
-        if (themeService.showDay)
-          GestureDetector(
-            onTap: onDayTap,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-              decoration: BoxDecoration(
-                color: currentDayColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: currentDayColor, width: 2),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: currentDayColor,
-                      shape: BoxShape.circle,
-                    ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Day name with color indicator
+            if (themeService.showDay)
+              GestureDetector(
+                onTap: onDayTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 0,
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    dayName,
-                    style: themeService.getSecondaryTextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: currentDayColor,
-                    ),
+                  decoration: BoxDecoration(
+                    color: currentDayColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: currentDayColor, width: 2),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: currentDayColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        dayName,
+                        style: themeService.getSecondaryTextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: currentDayColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
-        if (themeService.showDay && themeService.showDate)
-          const SizedBox(width: 12),
+            if (themeService.showDay && themeService.showDate)
+              const SizedBox(width: 12),
 
-        // Conditionally show date
-        if (themeService.showDate)
-          Center(
-            child: Text(
-              date,
-              style: themeService.getSecondaryTextStyle(
-                fontSize: 12,
-                color: themeService.primaryColor,
+            // Conditionally show date
+            if (themeService.showDate)
+              Center(
+                child: Text(
+                  date,
+                  style: themeService.getSecondaryTextStyle(
+                    fontSize: 12,
+                    color: themeService.primaryColor,
+                  ),
+                ),
               ),
-            ),
-          ),
-        if (themeService.showDate) const SizedBox(height: 12),
+            if (themeService.showDate) const SizedBox(height: 12),
+          ],
+        ),
       ],
     );
   }

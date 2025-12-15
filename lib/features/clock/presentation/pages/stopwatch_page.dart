@@ -35,7 +35,7 @@ class StopwatchPage extends StatelessWidget {
                 builder: (context, timeService, child) {
                   final sw = timeService.stopwatchElapsed;
                   final swText =
-                      "${two(sw.inMinutes)}:${two(sw.inSeconds % 60)}:${two((sw.inMilliseconds ~/ 10) % 100)}";
+                      "${two(sw.inHours)}:${two(sw.inMinutes.remainder(60))}:${two(sw.inSeconds.remainder(60))}:${two((sw.inMilliseconds ~/ 10) % 100)}";
                   return Text(
                     swText,
                     style: themeService.getPrimaryTextStyle(
@@ -49,52 +49,55 @@ class StopwatchPage extends StatelessWidget {
 
               const SizedBox(height: 60),
 
-              // Use Selector for buttons
-              Selector<TimeService, bool>(
-                selector: (_, service) => service.stopwatchRunning,
-                builder: (context, isRunning, child) {
+              // Use Consumer for buttons to access both running state and elapsed time
+              Consumer<TimeService>(
+                builder: (context, ts, child) {
+                  final isRunning = ts.stopwatchRunning;
+                  final hasElapsed = ts.stopwatchElapsed > Duration.zero;
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
                       children: [
                         Expanded(
-                          // ← Tambahkan ini
                           child: _buildButton(
                             context,
-                            label: "Start",
+                            label: hasElapsed && !isRunning
+                                ? "Resume"
+                                : "Start",
                             onPressed: isRunning
                                 ? null
                                 : () {
                                     timeService.startStopwatch();
                                     SnackbarHelper.showSnackbar(
                                       context,
-                                      'Stopwatch started',
+                                      hasElapsed
+                                          ? 'Stopwatch resumed'
+                                          : 'Stopwatch started',
                                       themeService,
                                     );
                                   },
                           ),
                         ),
-                        const SizedBox(width: 8), // Kurangi spacing
+                        const SizedBox(width: 8),
                         Expanded(
-                          // ← Tambahkan ini
                           child: _buildButton(
                             context,
-                            label: "Stop",
+                            label: "Pause",
                             onPressed: isRunning
                                 ? () {
                                     timeService.stopStopwatch();
                                     SnackbarHelper.showSnackbar(
                                       context,
-                                      'Stopwatch stopped',
+                                      'Stopwatch paused',
                                       themeService,
                                     );
                                   }
                                 : null,
                           ),
                         ),
-                        const SizedBox(width: 8), // Kurangi spacing
+                        const SizedBox(width: 8),
                         Expanded(
-                          // ← Tambahkan ini
                           child: _buildButton(
                             context,
                             label: "Reset",

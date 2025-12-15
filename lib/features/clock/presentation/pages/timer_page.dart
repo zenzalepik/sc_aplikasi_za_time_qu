@@ -35,7 +35,7 @@ class TimerPage extends StatelessWidget {
                 builder: (context, timeService, child) {
                   final duration = timeService.timerCurrentRemaining;
                   final timerText =
-                      "${two(duration.inMinutes)}:${two(duration.inSeconds % 60)}";
+                      "${two(duration.inHours)}:${two(duration.inMinutes.remainder(60))}:${two(duration.inSeconds.remainder(60))}:${two((duration.inMilliseconds ~/ 10) % 100)}";
                   return Text(
                     timerText,
                     style: themeService.getPrimaryTextStyle(
@@ -49,34 +49,38 @@ class TimerPage extends StatelessWidget {
 
               const SizedBox(height: 60),
 
-              // Use Selector for buttons
-              Selector<TimeService, bool>(
-                selector: (_, service) => service.timerRunning,
-                builder: (context, isRunning, child) {
+              // Use Consumer for buttons to access both running state and remaining time
+              Consumer<TimeService>(
+                builder: (context, ts, child) {
+                  final isRunning = ts.timerRunning;
+                  final hasRemaining = ts.timerCurrentRemaining > Duration.zero;
+                  // Show Resume if timer has time remaining and is not running
+                  final shouldShowResume = hasRemaining && !isRunning;
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
                       children: [
                         Expanded(
-                          // ← Tambahkan ini
                           child: _buildButton(
                             context,
-                            label: "Start",
+                            label: shouldShowResume ? "Resume" : "Start",
                             onPressed: isRunning
                                 ? null
                                 : () {
                                     timeService.startTimer();
                                     SnackbarHelper.showSnackbar(
                                       context,
-                                      'Timer started',
+                                      shouldShowResume
+                                          ? 'Timer resumed'
+                                          : 'Timer started',
                                       themeService,
                                     );
                                   },
                           ),
                         ),
-                        const SizedBox(width: 8), // Kurangi spacing
+                        const SizedBox(width: 8),
                         Expanded(
-                          // ← Tambahkan ini
                           child: _buildButton(
                             context,
                             label: "Pause",
@@ -92,9 +96,8 @@ class TimerPage extends StatelessWidget {
                                 : null,
                           ),
                         ),
-                        const SizedBox(width: 8), // Kurangi spacing
+                        const SizedBox(width: 8),
                         Expanded(
-                          // ← Tambahkan ini
                           child: _buildButton(
                             context,
                             label: "Reset",
@@ -177,6 +180,8 @@ class TimerPage extends StatelessWidget {
           const Duration(minutes: 10),
           timeService,
         ),
+        const SizedBox(width: 10),
+        _buildCustomButton(context, timeService),
       ],
     );
   }
@@ -188,13 +193,172 @@ class TimerPage extends StatelessWidget {
     TimeService timeService,
   ) {
     final themeService = Provider.of<ThemeService>(context, listen: false);
-    return TextButton(
+    return OutlinedButton(
       onPressed: () => timeService.setTimerDuration(duration),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
       child: Text(
         label,
         style: themeService.getSecondaryTextStyle(
           color: Theme.of(context).primaryColor,
         ),
+      ),
+    );
+  }
+
+  Widget _buildCustomButton(BuildContext context, TimeService timeService) {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
+    return OutlinedButton(
+      onPressed: () => _showCustomDurationDialog(context, timeService),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: Text(
+        "Custom",
+        style: themeService.getSecondaryTextStyle(
+          color: Theme.of(context).primaryColor,
+        ),
+      ),
+    );
+  }
+
+  void _showCustomDurationDialog(
+    BuildContext context,
+    TimeService timeService,
+  ) {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
+    final hoursController = TextEditingController(text: "0");
+    final minutesController = TextEditingController(text: "0");
+    final secondsController = TextEditingController(text: "0");
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: themeService.backgroundColor,
+        title: Text(
+          "Set Custom Duration",
+          style: themeService.getSecondaryTextStyle(
+            color: themeService.primaryColor,
+            fontSize: 20,
+          ),
+        ),
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: hoursController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                ),
+                decoration: InputDecoration(
+                  labelText: "Hours",
+                  labelStyle: themeService.getSecondaryTextStyle(
+                    color: themeService.primaryColor.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextField(
+                controller: minutesController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                ),
+                decoration: InputDecoration(
+                  labelText: "Minutes",
+                  labelStyle: themeService.getSecondaryTextStyle(
+                    color: themeService.primaryColor.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextField(
+                controller: secondsController,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                ),
+                decoration: InputDecoration(
+                  labelText: "Seconds",
+                  labelStyle: themeService.getSecondaryTextStyle(
+                    color: themeService.primaryColor.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: themeService.primaryColor, width: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              "Cancel",
+              style: themeService.getSecondaryTextStyle(
+                color: themeService.primaryColor,
+              ),
+            ),
+          ),
+          OutlinedButton(
+            onPressed: () {
+              final hours = int.tryParse(hoursController.text) ?? 0;
+              final minutes = int.tryParse(minutesController.text) ?? 0;
+              final seconds = int.tryParse(secondsController.text) ?? 0;
+
+              final duration = Duration(
+                hours: hours,
+                minutes: minutes,
+                seconds: seconds,
+              );
+
+              if (duration > Duration.zero) {
+                timeService.setTimerDuration(duration);
+                Navigator.pop(context);
+                SnackbarHelper.showSnackbar(
+                  context,
+                  'Timer duration set to ${two(hours)}:${two(minutes)}:${two(seconds)}',
+                  themeService,
+                );
+              }
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: themeService.primaryColor, width: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              "Set",
+              style: themeService.getSecondaryTextStyle(
+                color: themeService.primaryColor,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

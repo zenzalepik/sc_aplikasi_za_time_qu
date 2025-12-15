@@ -2,11 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/services/time_service.dart';
 import '../../../../core/services/ui_service.dart';
 import '../../../../core/services/theme_service.dart';
 import '../../../../widgets/second_display.dart';
-import '../../../../widgets/date_label.dart';
+import '../../../../widgets/date_label_positioned.dart';
+import '../../../../widgets/stopwatch_display.dart';
+import '../../../../widgets/timer_display.dart';
 
 class ClockPage extends StatefulWidget {
   const ClockPage({super.key});
@@ -85,7 +86,6 @@ class _ClockPageState extends State<ClockPage> {
 
   @override
   Widget build(BuildContext context) {
-    final timeService = Provider.of<TimeService>(context, listen: false);
     final themeService = Provider.of<ThemeService>(context);
 
     // Determine the color for the current day displayed
@@ -119,16 +119,6 @@ class _ClockPageState extends State<ClockPage> {
                     mainAxisAlignment:
                         MainAxisAlignment.spaceBetween, // ← Penting
                     children: [
-                      // Date Label
-                      // Date Label
-                      DateLabel(
-                        themeService: themeService,
-                        dayName: dayName,
-                        date: date,
-                        currentDayColor: currentDayColor,
-                        onDayTap: () => _showDaysDialog(themeService),
-                      ),
-
                       // Main clock display
                       Expanded(
                         child: GestureDetector(
@@ -157,6 +147,8 @@ class _ClockPageState extends State<ClockPage> {
                                   Widget buildCard(
                                     String value, {
                                     Widget? secondWidget,
+                                    Widget? dateWidget,
+                                    Widget? stopWatchWidget,
                                   }) {
                                     return Row(
                                       children: [
@@ -191,8 +183,12 @@ class _ClockPageState extends State<ClockPage> {
                                                   ),
                                                 ),
                                               ),
+                                              if (dateWidget != null)
+                                                dateWidget,
                                               if (secondWidget != null)
                                                 secondWidget,
+                                              if (stopWatchWidget != null)
+                                                stopWatchWidget,
                                             ],
                                           ),
                                         ),
@@ -208,7 +204,21 @@ class _ClockPageState extends State<ClockPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        Expanded(child: buildCard(hourStr)),
+                                        Expanded(
+                                          child: buildCard(
+                                            hourStr,
+                                            dateWidget: DateLabelPositioned(
+                                              themeService: themeService,
+                                              dayName: dayName,
+                                              date: date,
+                                              currentDayColor: currentDayColor,
+                                              onDayTap: () =>
+                                                  _showDaysDialog(themeService),
+                                              left: 0,
+                                              right: 0,
+                                            ),
+                                          ),
+                                        ),
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: buildCard(
@@ -217,6 +227,16 @@ class _ClockPageState extends State<ClockPage> {
                                               secondStr: secondStr,
                                               themeService: themeService,
                                             ),
+                                            stopWatchWidget:
+                                                // Conditionally show Stopwatch section
+                                                themeService.showStopwatch
+                                                ? Positioned(
+                                                    bottom: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    child: StopwatchDisplay(),
+                                                  )
+                                                : null,
                                           ),
                                         ),
                                       ],
@@ -227,7 +247,21 @@ class _ClockPageState extends State<ClockPage> {
                                   return Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Expanded(child: buildCard(hourStr)),
+                                      Expanded(
+                                        child: buildCard(
+                                          hourStr,
+                                          dateWidget: DateLabelPositioned(
+                                            themeService: themeService,
+                                            dayName: dayName,
+                                            date: date,
+                                            currentDayColor: currentDayColor,
+                                            onDayTap: () =>
+                                                _showDaysDialog(themeService),
+                                            left: 0,
+                                            right: 0,
+                                          ),
+                                        ),
+                                      ),
                                       const SizedBox(height: 10),
                                       Expanded(
                                         child: buildCard(
@@ -236,9 +270,18 @@ class _ClockPageState extends State<ClockPage> {
                                             secondStr: secondStr,
                                             themeService: themeService,
                                           ),
+                                          stopWatchWidget:
+                                              // Conditionally show Stopwatch section
+                                              themeService.showStopwatch
+                                              ? Positioned(
+                                                  bottom: 0,
+                                                  left: 0,
+                                                  right: 0,
+                                                  child: StopwatchDisplay(),
+                                                )
+                                              : null,
                                         ),
                                       ),
-                                      // const SizedBox(height: 30),
                                     ],
                                   );
                                 },
@@ -248,198 +291,8 @@ class _ClockPageState extends State<ClockPage> {
                         ),
                       ),
 
-                      // const SizedBox(height: 0),
-
-                      // Conditionally show Stopwatch section
-                      if (themeService.showStopwatch
-                      // && !themeService.showTimer
-                      )
-                        Consumer<TimeService>(
-                          builder: (context, ts, child) {
-                            if (ts.stopwatchElapsed > Duration.zero) {
-                              final sw = ts.stopwatchElapsed;
-                              final swText =
-                                  "${two(sw.inMinutes.remainder(60))}:${two(sw.inSeconds.remainder(60))}:${two((sw.inMilliseconds ~/ 10) % 100)}";
-
-                              return Column(
-                                children: [
-                                  Container(
-                                    height: 1,
-                                    color: themeService.primaryColor
-                                        .withOpacity(0.3),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    "Stopwatch",
-                                    style: themeService.getSecondaryTextStyle(
-                                      color: themeService.primaryColor,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-
-                                  Center(
-                                    child: Text(
-                                      swText,
-                                      style: themeService.getSecondaryTextStyle(
-                                        fontSize: 50,
-                                        color: themeService.primaryColor,
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Selector<TimeService, bool>(
-                                        selector: (_, service) =>
-                                            service.stopwatchRunning,
-                                        builder: (context, isRunning, child) {
-                                          return Row(
-                                            children: [
-                                              TextButton(
-                                                onPressed: isRunning
-                                                    ? null
-                                                    : timeService
-                                                          .startStopwatch,
-                                                child: Text(
-                                                  "Start",
-                                                  style: themeService
-                                                      .getSecondaryTextStyle(
-                                                        color: themeService
-                                                            .primaryColor,
-                                                      ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: isRunning
-                                                    ? timeService.stopStopwatch
-                                                    : null,
-                                                child: Text(
-                                                  "Stop",
-                                                  style: themeService
-                                                      .getSecondaryTextStyle(
-                                                        color: themeService
-                                                            .primaryColor,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-                                      TextButton(
-                                        onPressed: timeService.resetStopwatch,
-                                        child: Text(
-                                          "Reset",
-                                          style: themeService
-                                              .getSecondaryTextStyle(
-                                                color:
-                                                    themeService.primaryColor,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 20),
-                                ],
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
-
                       // Conditionally show Timer section
-                      if (themeService.showTimer
-                      // && !themeService.showStopwatch
-                      )
-                        Consumer<TimeService>(
-                          builder: (context, ts, child) {
-                            if (ts.timerCurrentRemaining > Duration.zero) {
-                              final timerDuration = ts.timerCurrentRemaining;
-                              final timerText =
-                                  "${two(timerDuration.inMinutes.remainder(60))}:${two(timerDuration.inSeconds.remainder(60))}";
-
-                              return Column(
-                                children: [
-                                  Container(
-                                    height: 1,
-                                    color: themeService.primaryColor
-                                        .withOpacity(0.3),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(
-                                    "Timer",
-                                    style: themeService.getSecondaryTextStyle(
-                                      fontSize: 16,
-                                      color: themeService.primaryColor,
-                                    ),
-                                  ),
-                                  Center(
-                                    child: Text(
-                                      timerText,
-                                      style: themeService.getSecondaryTextStyle(
-                                        fontSize: 50,
-                                        color: themeService.primaryColor,
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Selector<TimeService, bool>(
-                                        selector: (_, service) =>
-                                            service.timerRunning,
-                                        builder: (context, isRunning, child) {
-                                          return Row(
-                                            children: [
-                                              TextButton(
-                                                onPressed: isRunning
-                                                    ? null
-                                                    : timeService.startTimer,
-                                                child: Text(
-                                                  "Start",
-                                                  style: themeService
-                                                      .getSecondaryTextStyle(
-                                                        color: themeService
-                                                            .primaryColor,
-                                                      ),
-                                                ),
-                                              ),
-                                              TextButton(
-                                                onPressed: isRunning
-                                                    ? timeService.stopTimer
-                                                    : null,
-                                                child: Text(
-                                                  "Pause",
-                                                  style: themeService
-                                                      .getSecondaryTextStyle(
-                                                        color: themeService
-                                                            .primaryColor,
-                                                      ),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-                                      TextButton(
-                                        onPressed: timeService.resetTimer,
-                                        child: Text(
-                                          "Reset",
-                                          style: themeService
-                                              .getSecondaryTextStyle(
-                                                color:
-                                                    themeService.primaryColor,
-                                              ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
-                        ),
+                      if (themeService.showTimer) TimerDisplay(),
                     ],
                   ),
                 ),
