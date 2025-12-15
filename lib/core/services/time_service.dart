@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TimeService extends ChangeNotifier {
+  // Reference to history service (will be set externally)
+  Function(DateTime, Duration)? onStopwatchTick;
   static const String _prefStopwatchStart = 'stopwatch_start';
   static const String _prefStopwatchAccumulated = 'stopwatch_accumulated';
   static const String _prefStopwatchRunning = 'stopwatch_running';
@@ -93,6 +95,15 @@ class TimeService extends ChangeNotifier {
         if (_timerRunning && timerCurrentRemaining == Duration.zero) {
           stopTimer(); // Auto stop when done
         }
+
+        // Auto-save stopwatch to history (every tick when running)
+        if (_stopwatchRunning && onStopwatchTick != null) {
+          final elapsed = stopwatchElapsed;
+          if (elapsed > Duration.zero) {
+            onStopwatchTick!(DateTime.now(), elapsed);
+          }
+        }
+
         notifyListeners();
       }
     });

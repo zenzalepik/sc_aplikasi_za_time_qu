@@ -2,10 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/time_service.dart';
 import '../../../../core/services/theme_service.dart';
+import '../../../../core/services/stopwatch_history_service.dart';
 import '../../../../core/utils/snackbar_helper.dart';
+import 'stopwatch_history_page.dart';
 
-class StopwatchPage extends StatelessWidget {
+class StopwatchPage extends StatefulWidget {
   const StopwatchPage({super.key});
+
+  @override
+  State<StopwatchPage> createState() => _StopwatchPageState();
+}
+
+class _StopwatchPageState extends State<StopwatchPage> {
+  bool _showUI = true;
+
+  void _toggleUI() {
+    setState(() {
+      _showUI = !_showUI;
+    });
+  }
 
   String two(int n) => n.toString().padLeft(2, "0");
 
@@ -13,9 +28,81 @@ class StopwatchPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeService = Provider.of<TimeService>(context, listen: false);
     final themeService = Provider.of<ThemeService>(context);
+    final historyService = Provider.of<StopwatchHistoryService>(
+      context,
+      listen: false,
+    );
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _showUI
+          ? AppBar(
+              backgroundColor: Colors.transparent,
+              iconTheme: IconThemeData(color: themeService.primaryColor),
+            )
+          : null,
+      drawer: _showUI
+          ? Drawer(
+              backgroundColor: themeService.backgroundColor,
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(color: Colors.transparent),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          size: 48,
+                          color: themeService.primaryColor,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Stopwatch Menu',
+                          style: themeService.getSecondaryTextStyle(
+                            color: themeService.primaryColor,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.calendar_month,
+                      color: themeService.primaryColor,
+                    ),
+                    title: Text(
+                      'View Calendar',
+                      style: themeService.getSecondaryTextStyle(
+                        color: themeService.primaryColor,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Auto-saving in real-time',
+                      style: themeService.getSecondaryTextStyle(
+                        color: themeService.primaryColor.withOpacity(0.6),
+                        fontSize: 12,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const StopwatchHistoryPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            )
+          : null,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -36,12 +123,15 @@ class StopwatchPage extends StatelessWidget {
                   final sw = timeService.stopwatchElapsed;
                   final swText =
                       "${two(sw.inHours)}:${two(sw.inMinutes.remainder(60))}:${two(sw.inSeconds.remainder(60))}:${two((sw.inMilliseconds ~/ 10) % 100)}";
-                  return Text(
-                    swText,
-                    style: themeService.getPrimaryTextStyle(
-                      fontSize: 70,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
+                  return GestureDetector(
+                    onTap: _toggleUI,
+                    child: Text(
+                      swText,
+                      style: themeService.getPrimaryTextStyle(
+                        fontSize: themeService.stopwatchPageFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   );
                 },
@@ -132,7 +222,7 @@ class StopwatchPage extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).primaryColor,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

@@ -58,6 +58,11 @@ class GoogleFontsService {
           GoogleFonts.poppins(),
           GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ]),
+        // Anton
+        GoogleFonts.pendingFonts([
+          GoogleFonts.anton(),
+          GoogleFonts.anton(fontWeight: FontWeight.bold),
+        ]),
       ]);
 
       _isPreloaded = true;

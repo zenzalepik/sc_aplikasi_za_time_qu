@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/ui_service.dart';
 import '../../../../core/services/theme_service.dart';
+import '../../../../core/services/system_ui_service.dart';
 import '../../../../widgets/second_display.dart';
 import '../../../../widgets/date_label_positioned.dart';
 import '../../../../widgets/stopwatch_display.dart';
@@ -100,111 +101,170 @@ class _ClockPageState extends State<ClockPage> {
 
     return Scaffold(
       backgroundColor: themeService.backgroundColor,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.of(
-                    context,
-                  ).size.height, // ← Tinggi layar minimum
-                  maxHeight: MediaQuery.of(
-                    context,
-                  ).size.height, // ← Tinggi layar maksimal
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween, // ← Penting
-                    children: [
-                      // Main clock display
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            Provider.of<UIService>(
-                              context,
-                              listen: false,
-                            ).toggleNavbar();
-                          },
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              // Responsive layout based on screen orientation
-                              LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final screenWidth = MediaQuery.of(
-                                    context,
-                                  ).size.width;
-                                  final screenHeight = MediaQuery.of(
-                                    context,
-                                  ).size.height;
-                                  final isLandscape =
-                                      screenWidth > screenHeight;
+      body: RefreshIndicator(
+        onRefresh: () async {
+          SystemUIService.toggleSystemUI();
+        },
+        color: themeService.primaryColor,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(
+                      context,
+                    ).size.height, // ← Tinggi layar minimum
+                    maxHeight: MediaQuery.of(
+                      context,
+                    ).size.height, // ← Tinggi layar maksimal
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween, // ← Penting
+                      children: [
+                        // Main clock display
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Provider.of<UIService>(
+                                context,
+                                listen: false,
+                              ).toggleNavbar();
+                            },
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                // Responsive layout based on screen orientation
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final screenWidth = MediaQuery.of(
+                                      context,
+                                    ).size.width;
+                                    final screenHeight = MediaQuery.of(
+                                      context,
+                                    ).size.height;
+                                    final isLandscape =
+                                        screenWidth > screenHeight;
 
-                                  // Card builder helper
-                                  Widget buildCard(
-                                    String value, {
-                                    Widget? secondWidget,
-                                    Widget? dateWidget,
-                                    Widget? stopWatchWidget,
-                                  }) {
-                                    return Row(
-                                      children: [
-                                        Expanded(
-                                          child: Stack(
-                                            clipBehavior: Clip.none,
-                                            children: [
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 20,
-                                                      vertical: 0,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: themeService.cardColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(15),
-                                                ),
-                                                child: Center(
-                                                  child: Text(
-                                                    value,
-                                                    textAlign: TextAlign.center,
-                                                    style: themeService
-                                                        .getPrimaryTextStyle(
-                                                          fontSize: themeService
-                                                              .clockFontSize,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          height: 0.9,
-                                                          color: themeService
-                                                              .primaryColor,
+                                    // Card builder helper
+                                    Widget buildCard(
+                                      String value, {
+                                      Widget? secondWidget,
+                                      Widget? dateWidget,
+                                      Widget? stopWatchWidget,
+                                    }) {
+                                      return Row(
+                                        children: [
+                                          Expanded(
+                                            child: Stack(
+                                              clipBehavior: Clip.none,
+                                              children: [
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 20,
+                                                        vertical: 0,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        themeService.cardColor,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          15,
                                                         ),
                                                   ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      value,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: themeService
+                                                          .getPrimaryTextStyle(
+                                                            fontSize: themeService
+                                                                .clockFontSize,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            height: 0.9,
+                                                            color: themeService
+                                                                .primaryColor,
+                                                          ),
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
-                                              if (dateWidget != null)
-                                                dateWidget,
-                                              if (secondWidget != null)
-                                                secondWidget,
-                                              if (stopWatchWidget != null)
-                                                stopWatchWidget,
-                                            ],
+                                                if (dateWidget != null)
+                                                  dateWidget,
+                                                if (secondWidget != null)
+                                                  secondWidget,
+                                                if (stopWatchWidget != null)
+                                                  stopWatchWidget,
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    );
-                                  }
+                                        ],
+                                      );
+                                    }
 
-                                  // Horizontal layout for landscape (width > height)
-                                  if (isLandscape) {
-                                    return Row(
+                                    // Horizontal layout for landscape (width > height)
+                                    if (isLandscape) {
+                                      return Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: buildCard(
+                                              hourStr,
+                                              dateWidget: DateLabelPositioned(
+                                                themeService: themeService,
+                                                dayName: dayName,
+                                                date: date,
+                                                currentDayColor:
+                                                    currentDayColor,
+                                                onDayTap: () => _showDaysDialog(
+                                                  themeService,
+                                                ),
+                                                left: 0,
+                                                right: 0,
+                                              ),
+                                            ),
+                                          ),
+                                          // const SizedBox(width: 10),
+                                          // Separator ":"
+                                          ClockSeparator(
+                                            themeService: themeService,
+                                          ),
+                                          Expanded(
+                                            child: buildCard(
+                                              minuteStr,
+                                              secondWidget: SecondDisplay(
+                                                secondStr: secondStr,
+                                                themeService: themeService,
+                                              ),
+                                              stopWatchWidget:
+                                                  // Conditionally show Stopwatch section
+                                                  themeService.showStopwatch
+                                                  ? Positioned(
+                                                      bottom: 0,
+                                                      left: 0,
+                                                      right: 0,
+                                                      child: StopwatchDisplay(),
+                                                    )
+                                                  : null,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }
+
+                                    // Vertical layout for portrait (height > width)
+                                    return Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
                                       children: [
                                         Expanded(
                                           child: buildCard(
@@ -221,10 +281,10 @@ class _ClockPageState extends State<ClockPage> {
                                             ),
                                           ),
                                         ),
-                                        // const SizedBox(width: 10),
-                                        // Separator ":"
+                                        // const SizedBox(height: 10),
                                         ClockSeparator(
                                           themeService: themeService,
+                                          rotateVertical: true,
                                         ),
                                         Expanded(
                                           child: buildCard(
@@ -247,68 +307,22 @@ class _ClockPageState extends State<ClockPage> {
                                         ),
                                       ],
                                     );
-                                  }
-
-                                  // Vertical layout for portrait (height > width)
-                                  return Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Expanded(
-                                        child: buildCard(
-                                          hourStr,
-                                          dateWidget: DateLabelPositioned(
-                                            themeService: themeService,
-                                            dayName: dayName,
-                                            date: date,
-                                            currentDayColor: currentDayColor,
-                                            onDayTap: () =>
-                                                _showDaysDialog(themeService),
-                                            left: 0,
-                                            right: 0,
-                                          ),
-                                        ),
-                                      ),
-                                      // const SizedBox(height: 10),
-                                      ClockSeparator(
-                                        themeService: themeService,
-                                        rotateVertical: true,
-                                      ),
-                                      Expanded(
-                                        child: buildCard(
-                                          minuteStr,
-                                          secondWidget: SecondDisplay(
-                                            secondStr: secondStr,
-                                            themeService: themeService,
-                                          ),
-                                          stopWatchWidget:
-                                              // Conditionally show Stopwatch section
-                                              themeService.showStopwatch
-                                              ? Positioned(
-                                                  bottom: 0,
-                                                  left: 0,
-                                                  right: 0,
-                                                  child: StopwatchDisplay(),
-                                                )
-                                              : null,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                            ],
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      // Conditionally show Timer section
-                      if (themeService.showTimer) TimerDisplay(),
-                    ],
+                        // Conditionally show Timer section
+                        if (themeService.showTimer) TimerDisplay(),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

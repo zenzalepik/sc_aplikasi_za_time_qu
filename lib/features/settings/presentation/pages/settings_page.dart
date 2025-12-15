@@ -156,6 +156,26 @@ class SettingsPage extends StatelessWidget {
                 onSizeChanged: (size) => themeService.setTimerFontSize(size),
                 themeService: themeService,
               ),
+              const SizedBox(height: 20),
+              FontSizeSlider(
+                title: "Stopwatch Page Numbers",
+                currentSize: themeService.stopwatchPageFontSize,
+                min: 30.0,
+                max: 150.0,
+                onSizeChanged: (size) =>
+                    themeService.setStopwatchPageFontSize(size),
+                themeService: themeService,
+              ),
+              const SizedBox(height: 20),
+              FontSizeSlider(
+                title: "Timer Page Numbers",
+                currentSize: themeService.timerPageFontSize,
+                min: 30.0,
+                max: 150.0,
+                onSizeChanged: (size) =>
+                    themeService.setTimerPageFontSize(size),
+                themeService: themeService,
+              ),
 
               const SizedBox(height: 40),
               Divider(color: themeService.primaryColor.withValues(alpha: 0.3)),
@@ -256,7 +276,7 @@ class SettingsPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: currentColor,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white, width: 2),
+              border: Border.all(color: themeService.primaryColor, width: 2),
             ),
           ),
         ),
@@ -285,7 +305,7 @@ class SettingsPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           decoration: BoxDecoration(
-            color: Colors.grey[900],
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: themeService.primaryColor.withValues(alpha: 0.5),
@@ -294,7 +314,7 @@ class SettingsPage extends StatelessWidget {
           child: DropdownButton<String>(
             value: currentFont,
             isExpanded: true,
-            dropdownColor: Colors.grey[900],
+            dropdownColor: Colors.transparent,
             underline: const SizedBox(),
             icon: Icon(Icons.arrow_drop_down, color: themeService.primaryColor),
             items: ThemeService.availableFonts.keys.map((String fontName) {
@@ -303,7 +323,7 @@ class SettingsPage extends StatelessWidget {
                 child: Text(
                   fontName,
                   style: ThemeService.availableFonts[fontName]!(
-                    color: Colors.white,
+                    color: themeService.primaryColor,
                     fontSize: 16,
                   ),
                 ),
@@ -343,6 +363,8 @@ class SettingsPage extends StatelessWidget {
           value: value,
           onChanged: onChanged,
           activeColor: themeService.primaryColor,
+          inactiveTrackColor: themeService.primaryColor.withOpacity(0.3),
+          inactiveThumbColor: themeService.primaryColor.withOpacity(0.5),
         ),
       ],
     );
@@ -353,12 +375,14 @@ class SettingsPage extends StatelessWidget {
     Color currentColor,
     Function(Color) onColorChanged,
   ) {
+    final themeService = Provider.of<ThemeService>(context, listen: false);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return _ColorPickerDialog(
           initialColor: currentColor,
           onColorChanged: onColorChanged,
+          themeService: themeService,
         );
       },
     );
@@ -368,10 +392,12 @@ class SettingsPage extends StatelessWidget {
 class _ColorPickerDialog extends StatefulWidget {
   final Color initialColor;
   final Function(Color) onColorChanged;
+  final ThemeService themeService;
 
   const _ColorPickerDialog({
     required this.initialColor,
     required this.onColorChanged,
+    required this.themeService,
   });
 
   @override
@@ -390,8 +416,11 @@ class _ColorPickerDialogState extends State<_ColorPickerDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Colors.grey[900],
-      title: const Text('Pick a color', style: TextStyle(color: Colors.white)),
+      backgroundColor: Colors.transparent,
+      title: Text(
+        'Pick a color',
+        style: TextStyle(color: widget.themeService.primaryColor),
+      ),
       content: SingleChildScrollView(
         child: ColorPicker(
           pickerColor: _currentColor,

@@ -4,8 +4,21 @@ import '../../../../core/services/time_service.dart';
 import '../../../../core/services/theme_service.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 
-class TimerPage extends StatelessWidget {
+class TimerPage extends StatefulWidget {
   const TimerPage({super.key});
+
+  @override
+  State<TimerPage> createState() => _TimerPageState();
+}
+
+class _TimerPageState extends State<TimerPage> {
+  bool _showUI = true;
+
+  void _toggleUI() {
+    setState(() {
+      _showUI = !_showUI;
+    });
+  }
 
   String two(int n) => n.toString().padLeft(2, "0");
 
@@ -16,6 +29,7 @@ class TimerPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: _showUI ? AppBar(backgroundColor: Colors.transparent) : null,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -36,12 +50,15 @@ class TimerPage extends StatelessWidget {
                   final duration = timeService.timerCurrentRemaining;
                   final timerText =
                       "${two(duration.inHours)}:${two(duration.inMinutes.remainder(60))}:${two(duration.inSeconds.remainder(60))}:${two((duration.inMilliseconds ~/ 10) % 100)}";
-                  return Text(
-                    timerText,
-                    style: themeService.getPrimaryTextStyle(
-                      fontSize: 70,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
+                  return GestureDetector(
+                    onTap: _toggleUI,
+                    child: Text(
+                      timerText,
+                      style: themeService.getPrimaryTextStyle(
+                        fontSize: themeService.timerPageFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
                   );
                 },
@@ -144,7 +161,7 @@ class TimerPage extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Colors.transparent,
         foregroundColor: Theme.of(context).primaryColor,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

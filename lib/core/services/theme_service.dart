@@ -17,6 +17,8 @@ class ThemeService extends ChangeNotifier {
   static const String _prefSecondFontSize = 'second_font_size';
   static const String _prefStopwatchFontSize = 'stopwatch_font_size';
   static const String _prefTimerFontSize = 'timer_font_size';
+  static const String _prefStopwatchPageFontSize = 'stopwatch_page_font_size';
+  static const String _prefTimerPageFontSize = 'timer_page_font_size';
 
   Color _primaryColor = Colors.greenAccent;
   Color _backgroundColor = Colors.black;
@@ -32,6 +34,8 @@ class ThemeService extends ChangeNotifier {
   double _secondFontSize = 20.0;
   double _stopwatchFontSize = 24.0;
   double _timerFontSize = 50.0;
+  double _stopwatchPageFontSize = 70.0;
+  double _timerPageFontSize = 70.0;
 
   Color get primaryColor => _primaryColor;
   Color get backgroundColor => _backgroundColor;
@@ -47,6 +51,8 @@ class ThemeService extends ChangeNotifier {
   double get secondFontSize => _secondFontSize;
   double get stopwatchFontSize => _stopwatchFontSize;
   double get timerFontSize => _timerFontSize;
+  double get stopwatchPageFontSize => _stopwatchPageFontSize;
+  double get timerPageFontSize => _timerPageFontSize;
 
   // Map of available fonts
   static final Map<
@@ -82,6 +88,7 @@ class ThemeService extends ChangeNotifier {
     'Montserrat': GoogleFonts.montserrat,
     'Open Sans': GoogleFonts.openSans,
     'Poppins': GoogleFonts.poppins,
+    'Anton': GoogleFonts.anton,
   };
 
   TextStyle getPrimaryTextStyle({
@@ -163,6 +170,8 @@ class ThemeService extends ChangeNotifier {
     final secondSize = prefs.getDouble(_prefSecondFontSize);
     final stopwatchSize = prefs.getDouble(_prefStopwatchFontSize);
     final timerSize = prefs.getDouble(_prefTimerFontSize);
+    final stopwatchPageSize = prefs.getDouble(_prefStopwatchPageFontSize);
+    final timerPageSize = prefs.getDouble(_prefTimerPageFontSize);
 
     if (clockSize != null) {
       _clockFontSize = clockSize;
@@ -175,6 +184,12 @@ class ThemeService extends ChangeNotifier {
     }
     if (timerSize != null) {
       _timerFontSize = timerSize;
+    }
+    if (stopwatchPageSize != null) {
+      _stopwatchPageFontSize = stopwatchPageSize;
+    }
+    if (timerPageSize != null) {
+      _timerPageFontSize = timerPageSize;
     }
 
     notifyListeners();
@@ -282,6 +297,20 @@ class ThemeService extends ChangeNotifier {
     await prefs.setDouble(_prefTimerFontSize, size);
   }
 
+  Future<void> setStopwatchPageFontSize(double size) async {
+    _stopwatchPageFontSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefStopwatchPageFontSize, size);
+  }
+
+  Future<void> setTimerPageFontSize(double size) async {
+    _timerPageFontSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefTimerPageFontSize, size);
+  }
+
   ThemeData get themeData {
     return ThemeData.dark().copyWith(
       scaffoldBackgroundColor: _backgroundColor,
@@ -304,7 +333,7 @@ class ThemeService extends ChangeNotifier {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey[900],
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
           textStyle: getSecondaryTextStyle(),
         ),
