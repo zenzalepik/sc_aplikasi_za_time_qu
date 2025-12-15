@@ -29,13 +29,12 @@ class _StopwatchDisplayState extends State<StopwatchDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    final timeService = Provider.of<TimeService>(context, listen: false);
     final themeService = Provider.of<ThemeService>(context);
 
     return Consumer<TimeService>(
-      builder: (context, ts, child) {
-        if (ts.stopwatchElapsed > Duration.zero) {
-          final sw = ts.stopwatchElapsed;
+      builder: (context, timeService, child) {
+        if (timeService.stopwatchElapsed > Duration.zero) {
+          final sw = timeService.stopwatchElapsed;
           final swText =
               "${two(sw.inHours)}:${two(sw.inMinutes.remainder(60))}:${two(sw.inSeconds.remainder(60))}:${two((sw.inMilliseconds ~/ 10) % 100)}";
 
@@ -60,44 +59,40 @@ class _StopwatchDisplayState extends State<StopwatchDisplay> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Consumer<TimeService>(
-                      builder: (context, ts, child) {
-                        final isRunning = ts.stopwatchRunning;
-                        final hasElapsed = ts.stopwatchElapsed > Duration.zero;
-
-                        return Row(
-                          children: [
-                            TextButton(
-                              onPressed: isRunning
-                                  ? null
-                                  : () {
-                                      timeService.startStopwatch();
-                                      _hideControls();
-                                    },
-                              child: Text(
-                                hasElapsed && !isRunning ? "Resume" : "Start",
-                                style: themeService.getSecondaryTextStyle(
-                                  color: themeService.primaryColor,
-                                ),
-                              ),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: timeService.stopwatchRunning
+                              ? null
+                              : () {
+                                  timeService.startStopwatch();
+                                  _hideControls();
+                                },
+                          child: Text(
+                            timeService.stopwatchElapsed > Duration.zero &&
+                                    !timeService.stopwatchRunning
+                                ? "Resume"
+                                : "Start",
+                            style: themeService.getSecondaryTextStyle(
+                              color: themeService.primaryColor,
                             ),
-                            TextButton(
-                              onPressed: isRunning
-                                  ? () {
-                                      timeService.stopStopwatch();
-                                      _hideControls();
-                                    }
-                                  : null,
-                              child: Text(
-                                "Pause",
-                                style: themeService.getSecondaryTextStyle(
-                                  color: themeService.primaryColor,
-                                ),
-                              ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: timeService.stopwatchRunning
+                              ? () {
+                                  timeService.stopStopwatch();
+                                  _hideControls();
+                                }
+                              : null,
+                          child: Text(
+                            "Pause",
+                            style: themeService.getSecondaryTextStyle(
+                              color: themeService.primaryColor,
                             ),
-                          ],
-                        );
-                      },
+                          ),
+                        ),
+                      ],
                     ),
                     TextButton(
                       onPressed: () {
