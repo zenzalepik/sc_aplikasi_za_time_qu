@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for Google Fonts to download from server -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
     <application
         android:label="sc_aplikasi_za_time_qu"
         android:name="${applicationName}"

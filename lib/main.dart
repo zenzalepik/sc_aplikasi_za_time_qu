@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'core/services/time_service.dart';
 import 'core/services/theme_service.dart';
 import 'core/services/ui_service.dart';
+import 'widgets/splash_screen.dart';
 import 'package:flutter/services.dart'; // ← Import ini
 
 void main() async {
@@ -27,7 +28,8 @@ void main() async {
         ChangeNotifierProvider.value(value: themeService),
         ChangeNotifierProvider.value(value: uiService),
       ],
-      child: const DigitalClockApp(),
+      // Wrap dengan SplashScreen untuk loading indicator
+      child: const SplashScreen(child: DigitalClockApp()),
     ),
   );
 }

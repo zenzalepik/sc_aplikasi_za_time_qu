@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/services/theme_service.dart';
+import '../../../../widgets/font_size_slider.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -103,6 +104,57 @@ class SettingsPage extends StatelessWidget {
                 themeService.secondaryFont,
                 (font) => themeService.setSecondaryFont(font),
                 themeService,
+              ),
+
+              const SizedBox(height: 40),
+              Divider(color: themeService.primaryColor.withValues(alpha: 0.3)),
+              const SizedBox(height: 20),
+
+              // Font Sizes Section
+              Text(
+                "Font Sizes",
+                style: themeService.getSecondaryTextStyle(
+                  color: themeService.primaryColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              FontSizeSlider(
+                title: "Clock Numbers",
+                currentSize: themeService.clockFontSize,
+                min: 50.0,
+                max: 300.0,
+                onSizeChanged: (size) => themeService.setClockFontSize(size),
+                themeService: themeService,
+              ),
+              const SizedBox(height: 20),
+              FontSizeSlider(
+                title: "Second Display",
+                currentSize: themeService.secondFontSize,
+                min: 10.0,
+                max: 50.0,
+                onSizeChanged: (size) => themeService.setSecondFontSize(size),
+                themeService: themeService,
+              ),
+              const SizedBox(height: 20),
+              FontSizeSlider(
+                title: "Stopwatch Display",
+                currentSize: themeService.stopwatchFontSize,
+                min: 10.0,
+                max: 60.0,
+                onSizeChanged: (size) =>
+                    themeService.setStopwatchFontSize(size),
+                themeService: themeService,
+              ),
+              const SizedBox(height: 20),
+              FontSizeSlider(
+                title: "Timer Display",
+                currentSize: themeService.timerFontSize,
+                min: 20.0,
+                max: 100.0,
+                onSizeChanged: (size) => themeService.setTimerFontSize(size),
+                themeService: themeService,
               ),
 
               const SizedBox(height: 40),

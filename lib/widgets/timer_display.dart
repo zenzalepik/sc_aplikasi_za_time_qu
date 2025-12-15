@@ -38,7 +38,7 @@ class TimerDisplay extends StatelessWidget {
                 child: Text(
                   timerText,
                   style: themeService.getSecondaryTextStyle(
-                    fontSize: 50,
+                    fontSize: themeService.timerFontSize,
                     color: themeService.primaryColor,
                   ),
                 ),

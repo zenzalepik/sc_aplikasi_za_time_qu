@@ -8,6 +8,7 @@ import '../../../../widgets/second_display.dart';
 import '../../../../widgets/date_label_positioned.dart';
 import '../../../../widgets/stopwatch_display.dart';
 import '../../../../widgets/timer_display.dart';
+import '../../../../widgets/clock_separator.dart';
 
 class ClockPage extends StatefulWidget {
   const ClockPage({super.key});
@@ -173,7 +174,8 @@ class _ClockPageState extends State<ClockPage> {
                                                     textAlign: TextAlign.center,
                                                     style: themeService
                                                         .getPrimaryTextStyle(
-                                                          fontSize: 150,
+                                                          fontSize: themeService
+                                                              .clockFontSize,
                                                           fontWeight:
                                                               FontWeight.bold,
                                                           height: 0.9,
@@ -219,7 +221,11 @@ class _ClockPageState extends State<ClockPage> {
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 10),
+                                        // const SizedBox(width: 10),
+                                        // Separator ":"
+                                        ClockSeparator(
+                                          themeService: themeService,
+                                        ),
                                         Expanded(
                                           child: buildCard(
                                             minuteStr,
@@ -262,7 +268,11 @@ class _ClockPageState extends State<ClockPage> {
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 10),
+                                      // const SizedBox(height: 10),
+                                      ClockSeparator(
+                                        themeService: themeService,
+                                        rotateVertical: true,
+                                      ),
                                       Expanded(
                                         child: buildCard(
                                           minuteStr,

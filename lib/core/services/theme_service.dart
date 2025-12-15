@@ -13,6 +13,10 @@ class ThemeService extends ChangeNotifier {
   static const String _prefShowStopwatch = 'show_stopwatch';
   static const String _prefShowTimer = 'show_timer';
   static const String _prefCardColor = 'card_color';
+  static const String _prefClockFontSize = 'clock_font_size';
+  static const String _prefSecondFontSize = 'second_font_size';
+  static const String _prefStopwatchFontSize = 'stopwatch_font_size';
+  static const String _prefTimerFontSize = 'timer_font_size';
 
   Color _primaryColor = Colors.greenAccent;
   Color _backgroundColor = Colors.black;
@@ -24,6 +28,10 @@ class ThemeService extends ChangeNotifier {
   bool _showStopwatch = true;
   bool _showTimer = true;
   Color _cardColor = const Color(0xFF1E1E1E);
+  double _clockFontSize = 150.0;
+  double _secondFontSize = 20.0;
+  double _stopwatchFontSize = 24.0;
+  double _timerFontSize = 50.0;
 
   Color get primaryColor => _primaryColor;
   Color get backgroundColor => _backgroundColor;
@@ -35,6 +43,10 @@ class ThemeService extends ChangeNotifier {
   bool get showStopwatch => _showStopwatch;
   bool get showTimer => _showTimer;
   Color get cardColor => _cardColor;
+  double get clockFontSize => _clockFontSize;
+  double get secondFontSize => _secondFontSize;
+  double get stopwatchFontSize => _stopwatchFontSize;
+  double get timerFontSize => _timerFontSize;
 
   // Map of available fonts
   static final Map<
@@ -145,6 +157,26 @@ class ThemeService extends ChangeNotifier {
     if (card != null) {
       _cardColor = Color(card);
     }
+
+    // Load font sizes
+    final clockSize = prefs.getDouble(_prefClockFontSize);
+    final secondSize = prefs.getDouble(_prefSecondFontSize);
+    final stopwatchSize = prefs.getDouble(_prefStopwatchFontSize);
+    final timerSize = prefs.getDouble(_prefTimerFontSize);
+
+    if (clockSize != null) {
+      _clockFontSize = clockSize;
+    }
+    if (secondSize != null) {
+      _secondFontSize = secondSize;
+    }
+    if (stopwatchSize != null) {
+      _stopwatchFontSize = stopwatchSize;
+    }
+    if (timerSize != null) {
+      _timerFontSize = timerSize;
+    }
+
     notifyListeners();
   }
 
@@ -220,6 +252,34 @@ class ThemeService extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_prefCardColor, color.value);
+  }
+
+  Future<void> setClockFontSize(double size) async {
+    _clockFontSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefClockFontSize, size);
+  }
+
+  Future<void> setSecondFontSize(double size) async {
+    _secondFontSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefSecondFontSize, size);
+  }
+
+  Future<void> setStopwatchFontSize(double size) async {
+    _stopwatchFontSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefStopwatchFontSize, size);
+  }
+
+  Future<void> setTimerFontSize(double size) async {
+    _timerFontSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_prefTimerFontSize, size);
   }
 
   ThemeData get themeData {

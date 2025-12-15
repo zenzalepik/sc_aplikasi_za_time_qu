@@ -23,7 +23,7 @@ class SecondDisplay extends StatelessWidget {
       child: Text(
         secondStr,
         style: themeService.getPrimaryTextStyle(
-          fontSize: 20,
+          fontSize: themeService.secondFontSize,
           fontWeight: FontWeight.bold,
           color: themeService.primaryColor.withOpacity(0.5),
         ),

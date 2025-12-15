@@ -44,7 +44,7 @@ class _StopwatchDisplayState extends State<StopwatchDisplay> {
                 height: 1,
                 color: themeService.primaryColor.withOpacity(0.3),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 0),
 
               // Show title and buttons when controls are visible
               if (_showControls) ...[
@@ -118,14 +118,14 @@ class _StopwatchDisplayState extends State<StopwatchDisplay> {
                     child: Text(
                       swText,
                       style: themeService.getSecondaryTextStyle(
-                        fontSize: 24,
+                        fontSize: themeService.stopwatchFontSize,
                         color: themeService.primaryColor,
                       ),
                     ),
                   ),
                 ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
             ],
           );
         }
