@@ -52,11 +52,9 @@ Sistem alarm yang telah diperbaiki dengan fitur lengkap:
 - `lib/features/alarm/presentation/pages/alarm_ringing_screen.dart` - Layar alarm berbunyi
 
 #### Dependencies:
-- `audioplayers` - Audio playback (backup)
+- `audioplayers` - Audio playback (backup, saat ini menggunakan SystemSound)
 - `vibration` - Vibrasi device
 - `shared_preferences` - Penyimpanan alarm
-- `flutter_local_notifications` - Notifikasi (future use)
-- `android_alarm_manager_plus` - Background alarm (future use)
 
 #### Permissions (Android):
 - `VIBRATE` - Untuk getaran

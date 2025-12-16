@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sc_aplikasi_za_time_qu/core/services/notification_service.dart';
 
 class TimeService extends ChangeNotifier {
   // Reference to history service (will be set externally)
   Function(DateTime, Duration)? onStopwatchTick;
+  final NotificationService _notificationService = NotificationService();
+
   static const String _prefStopwatchStart = 'stopwatch_start';
   static const String _prefStopwatchAccumulated = 'stopwatch_accumulated';
   static const String _prefStopwatchRunning = 'stopwatch_running';
@@ -24,6 +27,7 @@ class TimeService extends ChangeNotifier {
   Duration _timerRemaining = const Duration(minutes: 1);
   Duration _timerInitial = const Duration(minutes: 1);
   bool _timerRunning = false;
+  String _timerId = 'default_timer'; // ID for notification tracking
 
   Timer? _ticker;
 
@@ -47,6 +51,7 @@ class TimeService extends ChangeNotifier {
   }
 
   Future<void> init() async {
+    await _notificationService.initialize();
     final prefs = await SharedPreferences.getInstance();
 
     // Load Stopwatch
@@ -178,12 +183,21 @@ class TimeService extends ChangeNotifier {
     _timerEndTime = DateTime.now().add(_timerRemaining);
     _timerRunning = true;
 
+    // Generate new timer ID for this session
+    _timerId = 'timer_${DateTime.now().millisecondsSinceEpoch}';
+
+    // Schedule notifications
+    await _scheduleTimerNotifications();
+
     await _saveTimerState();
     notifyListeners();
   }
 
   Future<void> stopTimer() async {
     if (!_timerRunning) return;
+
+    // Cancel notifications when timer is stopped
+    await _notificationService.cancelTimerNotifications(_timerId);
 
     _timerRemaining = timerCurrentRemaining;
     _timerEndTime = null;
@@ -194,6 +208,11 @@ class TimeService extends ChangeNotifier {
   }
 
   Future<void> resetTimer() async {
+    // Cancel notifications when timer is reset
+    if (_timerRunning) {
+      await _notificationService.cancelTimerNotifications(_timerId);
+    }
+
     _timerRunning = false;
     _timerEndTime = null;
     _timerRemaining = _timerInitial;
@@ -212,6 +231,24 @@ class TimeService extends ChangeNotifier {
     } else {
       await prefs.remove(_prefTimerEnd);
     }
+  }
+
+  /// Schedule notifications for timer
+  Future<void> _scheduleTimerNotifications() async {
+    if (_timerEndTime == null) return;
+
+    // Only schedule if timer duration is long enough
+    final duration = _timerEndTime!.difference(DateTime.now());
+    if (duration.inMinutes < 11) {
+      // Timer is less than 11 minutes, don't schedule notifications
+      return;
+    }
+
+    await _notificationService.scheduleTimerNotifications(
+      timerId: _timerId,
+      endTime: _timerEndTime!,
+      label: 'Timer akan selesai',
+    );
   }
 
   @override
